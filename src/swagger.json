@@ -1,0 +1,1293 @@
+{
+    "swagger": "2.0",
+    "info": {
+      "title": "E-COMMERCE-BINALI",
+      "description": "PC-Parts-Plaza",
+      "version": "1.0.0"
+    },
+    "servers":[
+      {
+      "url": "http://localhost:4000/api",
+          "description": "Local Server"
+    }
+  ],
+  "basePath":"/api",
+    "securityDefinitions":{
+      "bearerAuth":{
+        "type":"apiKey",
+        "name":"Authorization",
+        "in":"header",
+        "description":"Bearer <token>",
+        "scheme":"bearer",
+        "bearerFormat":"JWT",
+        "value": "Bearer <JWT>"
+      }
+    },
+    "security":[
+      {
+        "bearerAuth":[]
+      }
+    ],
+    "tags":[
+      {
+        "name":"USER",
+        "description":"users crud apis"
+      },
+      {
+        "name":"PRODUCT",
+        "description":"products crud apis"
+      },
+      {
+        "name":"CART",
+        "description":"carts crud apis"
+      },
+      {
+        "name":"ORDER",
+         "description":"orders crud apis"
+      }
+      ],
+      "schemes": ["http","https"],
+      "consumes": ["application/json"],
+      "produces": ["application/json"],
+    "paths": {
+      "/user/getUser": {
+        "get": {
+          "tags": ["USER"],
+          "summary": "Get user by id",
+          "security":[
+            {
+              "bearerAuth":[]
+            }
+          ],
+          "parameters": [
+            {
+              "name":"_id",
+              "in": "query",
+              "required": true,
+              "description": "Id of the user which is to be searched",
+              "type": "string",
+              "schema": {
+                "$ref": "#/definitions/User"
+              }
+            }
+          ],
+          "produces": ["application/json"],
+          "responses": {
+            "200": {
+              "description": "User Get Successfully",
+              "schema": {
+                "$ref": "#/definitions/User"
+              }
+            },
+            "404": {
+              "description": "User Not Found"
+            },
+            "500": {
+              "description": "Internal server error"
+            }
+          }
+        }
+      },
+      "/user/getUserList": {
+        "get": {
+          "tags": ["USER"],
+          "summary": "Get all Users",
+          "security":[{
+            "bearerAuth":[]
+          }],
+              "name":"users",
+              "schema": {
+                "$ref": "#/definitions/User"
+              },
+          "produces": ["application/json"],
+          "responses": {
+            "200": {
+              "description": "Users Get Successfully",
+              "schema": {
+                "$ref": "#/definitions/User"
+              }
+            },
+            "500": {
+              "description": "Internal server error"
+            }
+          }
+        }
+      },
+      "/user/allPermission": {
+        "get": {
+          "summary": "Permissions By admin",
+          "security":[{
+            "bearerAuth":[]
+          }],
+          "tags": ["USER"],
+          "description": "Route Based Authentication",
+          "schema": {
+            "$ref": "#/definitions/permission"
+          },
+          "produces": ["application/json"],
+          "responses": {
+            "200": {
+              "description": "Permissions List",
+              "schema": {
+                "$ref": "#/definitions/permission"
+              }
+            },
+            "500": {
+              "description": "Internal server error"
+            }
+          }
+        }
+      },
+      "/user/loginUser": {
+        "post": {
+          "summary": "User Login",
+          "tags": ["USER"],
+          "description": "Login to your account",
+          "parameters": [
+            {
+              "name":"email & password",
+              "email":"",
+              "password":"",
+              "in": "body",
+              "required":true,
+              "type":"string",
+              "description": "User Id and password",
+              "schema": {
+                "$ref": "#/definitions/userLogin"
+              }
+            }
+          ],
+          "produces": ["application/json"],
+          "responses": {
+            "200": {
+              "description": "Logged into your account",
+              "schema": {
+                "$ref": "#/definitions/userLogin"
+              }
+            },
+            "404": {
+              "description": "Invalid Data",
+              "schema": {
+                "$ref": "#/definitions/userLogin"
+              }
+            },
+            "500": {
+              "description": "Internal server error"
+            }
+          }
+        }
+      },
+      "/user/signUpUser": {
+        "post": {
+          "summary": "User Signup",
+          "tags": ["USER"],
+          "description": "Create new user in system",
+          "parameters": [
+            {
+              "name":"signUp",
+              "role":"",
+              "firstName":"",
+              "lastName":"",
+              "email":"",
+              "password":"",
+              "confirmPassword":"",
+              "address":"",
+              "phoneNumber":"",
+              "required":true,
+              "in": "body",
+              "description": "enter details for signup",
+              "schema": {
+                "$ref": "#/definitions/signUp"
+              }
+            }
+          ],
+          "produces": ["application/json"],
+          "responses": {
+            "200": {
+              "description": "New user is created",
+              "schema": {
+                "$ref": "#/definitions/signUp"
+              }
+            },
+            "401": {
+              "description": "unauthorized"
+            },
+            "400": {
+              "description": "Email Exist"
+            },
+            "500":{
+              "description":"Internal server error"
+            }
+          }
+        }
+      },
+      "/user/adminSignUp": {
+        "post": {
+          "summary": "admin signup",
+          "tags": ["USER"],
+          "description": "Create admin in system",
+          "parameters": [
+            {
+              "name":"AdminSignup",
+              "role":"",
+              "firstName":"",
+              "lastName":"",
+              "email":"",
+              "password":"",
+              "confirmPassword":"",
+              "address":"",
+              "phoneNumber":"",
+              "required":true,
+              "in": "body",
+              "description": "enter details for admin signup",
+              "schema": {
+                "$ref": "#/definitions/signUp"
+              }
+            }
+          ],
+          "produces": ["application/json"],
+          "responses": {
+            "200": {
+              "description": "New user is created",
+              "schema": {
+                "$ref": "#/definitions/signUp"
+              }
+            },
+            "401": {
+              "description": "unauthorized"
+            },
+            "400": {
+              "description": "Email Exist"
+            },
+            "500":{
+              "description":"Internal server error"
+            }
+          }
+        }
+      },
+      "/user/addPermission": {
+        "post": {
+          "summary": "Permissions By admin",
+          "security":[{
+            "bearerAuth":[]
+          }],
+          "tags": ["USER"],
+          "description": "Route Based Authentication",
+          "parameters": [
+            {
+              "name":"addPermission",
+              "role":"",
+              "route":"",
+              "addPermission":"",
+              "in": "body",
+              "required":true,
+              "description": "give route and role permission",
+              "schema": {
+                "$ref": "#/definitions/addPermission"
+              }
+            }
+          ],
+          "produces": ["application/json"],
+          "responses": {
+            "200": {
+              "description": "Permission Given",
+              "schema": {
+                "$ref": "#/definitions/addPermission"
+              }
+            },
+            "500": {
+              "description": "Internal server error"
+            }
+          }
+        }
+      },
+      "/user/updateUser": {
+        "put": {
+          "summary": "Update User",
+          "security":[{
+            "bearerAuth":[]
+          }],
+          "tags": ["USER"],
+          "description": "update user",
+          "parameters": [
+            {
+              "name":"updte user details",
+              "_id":"",
+              "role":"",
+              "firstName":"",
+              "lastName":"",
+              "email":"",
+              "password":"",
+              "confirmPassword":"",
+              "address":"",
+              "phoneNumber":"",
+              "required":true,
+              "in": "body",
+              "description": "enter details for update user",
+              "schema": {
+                "$ref": "#/definitions/User"
+              }
+            }
+          ],
+          "schema": {
+            "$ref": "#/definitions/User"
+          },
+          "produces": ["application/json"],
+          "responses": {
+            "200": {
+              "description": "User Updated Successfully",
+              "schema": {
+                "$ref": "#/definitions/User"
+              }
+            },
+            "401": {
+              "description": "unauthorized"
+            },
+            "500": {
+              "description": "Internal server error"
+            }
+          }
+        }
+      },
+      "/user/deletePermission": {
+        "delete": {
+          "summary": "Permissions By admin",
+          "security":[{
+            "bearerAuth":[]
+          }],
+          "tags": ["USER"],
+          "description": "Route Based Authentication",
+          "parameters": [
+            {
+              "name":"permissionId",
+              "in": "query",
+              "required":true,
+              "description": "permissionId"
+            }
+          ],
+          "schema": {
+            "$ref": "#/definitions/permission"
+          },
+          "produces": ["application/json"],
+          "responses": {
+            "200": {
+              "description": "Permission Deleted",
+              "schema": {
+                "$ref": "#/definitions/permission"
+              }
+            },
+            "404": {
+              "description": "Permission not found"
+            },
+            "500": {
+              "description": "Internal server error"
+            }
+          }
+        }
+      },    
+      "/user/deleteUser": {
+        "delete": {
+          "summary": "Delete User",
+          "security":[{
+            "bearerAuth":[]
+          }],
+          "tags": ["USER"],
+          "description": "Delete Account",
+          "parameters": [
+            {
+              "name":"_id",
+              "in": "query",
+              "required":true,
+              "description": "_id",
+              "schema": {
+                "$ref": "#/definitions/User"
+              }
+            }
+          ],
+          "produces": ["application/json"],
+          "responses": {
+            "200": {
+              "description": "Account Deleted ",
+              "schema": {
+                "$ref": "#/definitions/User"
+              }
+            },
+            "401": {
+              "description": "unauthorized"
+            },
+            "404": {
+              "description": "User Not Found"
+            },
+            "500": {
+              "description": "Internal server error"
+            }
+          }
+        }
+      },
+      "/product/getProduct": {
+        "get": {
+          "tags": ["PRODUCT"],
+          "summary": "Get product by Id",
+          "security":[{
+            "bearerAuth":[]
+          }],
+          "parameters": [
+            {
+              "name":"productId",
+              "in": "query",
+              "required": true,
+              "description": "Id of the product which is to be searched",
+              "type": "string"
+            }
+          ],
+          "schema": {
+            "$ref": "#/definitions/Product"
+          },
+          "produces": ["application/json"],
+          "responses": {
+            "200": {
+              "description": "Product Get Successfully",
+              "schema": {
+                "$ref": "#/definitions/Product"
+              }
+            },
+            "404": {
+              "description": "Product Not Found"
+            },
+            "500": {
+              "description": "Internal server error"
+            }
+          }
+        }
+      },
+      "/product/allProduct": {
+        "get": {
+          "tags": ["PRODUCT"],
+          "summary": "Get all products",
+          "security":[{
+            "bearerAuth":[]
+          }],
+          "parameters": [
+            {
+              "name":"searchTerm",
+              "in":"query"
+            },
+            {
+              "name":"page",
+              "in":"query"
+            },
+            {
+              "name":"pageSize",
+              "in":"query"
+            }
+          ],
+          "schema": {
+            "$ref": "#/definitions/Product"
+          },
+          "produces": ["application/json"],
+          "responses": {
+            "200": {
+              "description": "Product Get Successfully",
+              "schema": {
+                "$ref": "#/definitions/Product"
+              }
+            },
+            "404": {
+              "description": "Product Not Found"
+            },
+            "500": {
+              "description": "Internal server error"
+            }
+          }
+        }
+      },
+      "/product/addProduct": {
+        "post": {
+          "tags": ["PRODUCT"],
+          "summary": "add products",
+          "security":[{
+            "bearerAuth":[]
+          }],
+          "parameters": [
+            {
+              "name":"Add product to sell",
+              "productName":"",
+              "description":"",
+              "category":"",
+              "brand":"",
+              "price":{
+                "type":"number"
+              },
+              "stock":{
+                "type":"number"
+              },
+              "in": "body",
+              "required": true,
+              "type": "string",
+              "descriptions": "product to sell",
+              "schema": {
+                "$ref": "#/definitions/addProduct"
+              }
+            }
+          ],
+          "produces": ["application/json"],
+          "responses": {
+            "200": {
+              "description": "Product Added Successfully",
+              "schema": {
+                "$ref": "#/definitions/addProduct"
+              }
+            },
+            "500": {
+              "description": "Internal server error"
+            }
+          }
+        }
+      },
+      "/product/updateProduct": {
+        "put": {
+          "tags": ["PRODUCT"],
+          "summary": "Update Products",
+          "security":[{
+            "bearerAuth":[]
+          }],
+          "parameters": [
+            {
+              "name":"update product",
+              "productId":"",
+              "productName":"",
+              "description":"",
+              "category":"",
+              "brand":"",
+              "price":{
+                "type":"number"
+              },
+              "stock":{
+                "type":"number"
+              },
+              "in": "body",
+              "required": true,
+              "type": "string",
+              "descriptions": "product to update",
+              "schema": {
+                "$ref": "#/definitions/updateProduct"
+              }
+            }
+          ],
+          "produces": ["application/json"],
+          "responses": {
+            "200": {
+              "description": "product updated sucessfully",
+              "schema": {
+                "$ref": "#/definitions/updateProduct"
+              }
+            },
+            "500": {
+              "description": "Internal server error"
+            }
+          }
+        }
+      },
+      "/product/deleteProduct": {
+        "delete": {
+          "tags": ["PRODUCT"],
+          "summary": "Delete Products",
+          "security":[{
+            "bearerAuth":[]
+          }],
+          "parameters": [
+            {
+              "name":"productId",
+              "in": "query",
+              "required": true,
+              "descriptions": "Delete ProductId",
+              "type": "string",
+              "schema": {
+                "$ref": "#/definitions/Product"
+              }
+            }
+          ],
+          "produces": ["application/json"],
+          "responses": {
+            "200": {
+              "description": "Product Deleted Successfully",
+              "schema": {
+                "$ref": "#/definitions/Product"
+              }
+            },
+            "404": {
+              "description": "Product Not Found"
+            },
+            "500": {
+              "description": "Internal server error"
+            }
+          }
+        }
+      },
+      "/cart/getCartById": {
+        "get": {
+          "tags": ["CART"],
+          "summary": "Get Cart By Id",
+          "security":[{
+            "bearerAuth":[]
+          }],
+          "parameters": [
+            {
+              "name":"cartId",
+              "in": "query",
+              "required": true,
+              "descriptions": "Get all cart of particular buyer",
+              "type": "string",
+              "schema": {
+                "$ref": "#/definitions/Cart"
+              }
+            }
+          ],
+          "produces": ["application/json"],
+          "responses": {
+            "200": {
+              "description": "Cart Found Successfully",
+              "schema": {
+                "$ref": "#/definitions/Cart"
+              }
+            },
+            "404": {
+              "description": "Cart Not Found"
+            },
+            "500": {
+              "description": "Internal server error"
+            }
+          }
+        }
+      },
+      "/cart/addToCart": {
+        "post": {
+          "tags": ["CART"],
+          "summary": "Add product to cart that you want to buy",
+          "security":[{
+            "bearerAuth":[]
+          }],
+          "parameters": [
+            {
+              "name": "add product to cart",
+              "buyerId":"",
+              "productId":"",
+              "quantity":{
+                "type":"number"
+              },
+              "in": "body",
+              "required": true,
+              "type": "string",
+              "descriptions": "add to cart",
+              "schema": {
+                "$ref": "#/definitions/addToCart"
+              }
+            }
+          ],
+          "produces": ["application/json"],
+          "responses": {
+            "200": {
+              "description": "Product Added Successfully To Cart",
+              "schema": {
+                "$ref": "#/definitions/addToCart"
+              }
+            },
+            "500": {
+              "description": "Internal server error"
+            }
+          }
+        }
+      },
+      "/cart/updateCart": {
+        "put": {
+          "tags": ["CART"],
+          "summary": "Update Cart",
+          "security":[{
+            "bearerAuth":[]
+          }],
+          "parameters": [
+            {
+              "name":"update cart",
+              "cartId":"",
+              "productId":"",
+              "quantity":{
+                "type":"number"
+              },
+              "in": "body",
+              "required": true,
+              "descriptions": "update cart",
+              "type": "string",
+              "schema": {
+                "$ref": "#/definitions/updateCart"
+              }
+            }
+          ],
+          "produces": ["application/json"],
+          "responses": {
+            "200": {
+              "description": "Cart Updated Successfully",
+              "schema": {
+                "$ref": "#/definitions/updateCart"
+              }
+            },
+            "500": {
+              "description": "Internal server error"
+            }
+          }
+        }
+      },
+      "/cart/deleteCart": {
+        "delete": {
+          "tags": ["CART"],
+          "summary": "Delete Cart",
+          "security":[{
+            "bearerAuth":[]
+          }],
+          "parameters": [
+            {
+              "name":"cartId",
+              "in": "query",
+              "required": true,
+              "descriptions": "delete cart",
+              "type": "string",
+              "schema": {
+                "$ref": "#/definitions/Cart"
+              }
+            }
+          ],
+          "produces": ["application/json"],
+          "responses": {
+            "200": {
+              "description": "Cart Deleted Successfully",
+              "schema": {
+                "$ref": "#/definitions/Cart"
+              }
+            },
+            "404": {
+              "description": "Cart Not Found"
+            },
+            "500": {
+              "description": "Internal server error"
+            }
+          }
+        }
+      },
+      "/cart/deleteCartDetails": {
+        "delete": {
+          "tags": ["CART"],
+          "summary": "Delete Cart",
+          "security":[{
+            "bearerAuth":[]
+          }],
+          "parameters": [
+            {
+              "name":"Id",
+              "in": "query",
+              "required": true,
+              "descriptions": "delete cart",
+              "type": "string",
+              "schema": {
+                "$ref": "#/definitions/CartDetails"
+              }
+            }
+          ],
+          "produces": ["application/json"],
+          "responses": {
+            "200": {
+              "description": "Cart Deleted Successfully",
+              "schema": {
+                "$ref": "#/definitions/CartDetails"
+              }
+            },
+            "404": {
+              "description": "Cart Not Found"
+            },
+            "500": {
+              "description": "Internal server error"
+            }
+          }
+        }
+      },
+      "/order/getOrderDetailsById": {
+        "get": {
+          "tags": ["ORDER"],
+          "summary": "Get Order",
+          "security":[{
+            "bearerAuth":[]
+          }],
+          "parameters": [
+            {
+              "name":"orderId",
+              "in": "query",
+              "required": true,
+              "descriptions": "get details of product of particular buyer",
+              "type": "string",
+              "schema": {
+                "$ref": "#/definitions/Order"
+              }
+            }
+          ],
+          "produces": ["application/json"],
+          "responses": {
+            "200": {
+              "description": "Product Details Get Successfully",
+              "schema": {
+                "$ref": "#/definitions/Order"
+              }
+            },
+            "404": {
+              "description": "Order Details Not Found"
+            },
+            "500": {
+              "description": "Internal server error"
+            }
+          }
+        }
+      },
+      "/order/placeOrder": {
+        "post": {
+          "tags": ["ORDER"],
+          "summary": "Place order you want to buy",
+          "security":[{
+            "bearerAuth":[]
+          }],
+          "parameters": [
+            {
+              "name":"buyerId",
+              "in": "body",
+              "required": true,
+              "descriptions": "place order",
+              "type": "string",
+              "schema": {
+                "$ref": "#/definitions/placeOrder"
+              }
+            }
+          ],
+          "produces": ["application/json"],
+          "responses": {
+            "200": {
+              "description": "Order Placed Successfully",
+              "schema": {
+                "$ref": "#/definitions/placeOrder"
+              }
+            },
+            "404": {
+              "description": "Order Not Found"
+            },
+            "500": {
+              "description": "Internal server error"
+            }
+          }
+        }
+      },
+      "/order/cancleOrder": {
+        "delete": {
+          "tags": ["ORDER"],
+          "summary": "Cancle Order",
+          "security":[{
+            "bearerAuth":[]
+          }],
+          "parameters": [
+            {
+              "name":"orderId",
+              "in": "query",
+              "required": true,
+              "descriptions": "order that you want to cancle",
+              "type": "string",
+              "schema": {
+                "$ref": "#/definitions/Order"
+              }
+            }
+          ],
+          "produces": ["application/json"],
+          "responses": {
+            "200": {
+              "description": "Order Cancelled Successfully",
+              "schema": {
+                "$ref": "#/definitions/Order"
+              }
+            },
+            "404": {
+              "description": "Order Not Found"
+            },
+            "500": {
+              "description": "Internal server error"
+            }
+          }
+        }
+      },
+      "/order/cancleOrderDetails": {
+        "delete": {
+          "tags": ["ORDER"],
+          "summary": "Order Details",
+          "security":[{
+            "bearerAuth":[]
+          }],
+          "parameters": [
+            {
+              "name":"Id",
+              "in": "query",
+              "required": true,
+              "descriptions": "Product to delete from order",
+              "type": "string",
+              "schema": {
+                "$ref": "#/definitions/OrderDetails"
+              }
+            }
+          ],
+          "produces": ["application/json"],
+          "responses": {
+            "200": {
+              "description": "Product Cancle From Order",
+              "schema": {
+                "$ref": "#/definitions/OrderDetails"
+              }
+            },
+            "404": {
+              "description": "Order Not Found"
+            },
+            "500": {
+              "description": "Internal server error"
+            }
+          }
+        }
+      }
+    },
+    "definitions": {
+      "User": {
+        "properties": {
+          "_id": {
+            "type": "string",
+            "uniqueItems": true,
+            "primaryKey":true,
+            "format":"UUIDV4"
+          },
+          "role":{
+            "type":"string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format":"email",
+            "isUnique":true,
+            "validate":{
+            "isEmail":true
+            },
+            "allowNull":false
+          },
+          "password":{
+            "type":"string"
+          },
+          "confirmPassword":{
+            "type":"string"
+          },
+          "address": {
+            "type": "string"
+           },
+           "phoneNumber":{
+            "type":"number"
+           }
+        }
+      },
+      "userLogin": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "format":"email",
+            "isUnique":true,
+            "validate":{
+            "isEmail":true
+            },
+            "allowNull":false
+          },
+          "password":{
+            "type":"string"
+          }
+        }
+      },
+      "signUp": {
+        "properties": {
+          "role":{
+            "type":"string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format":"email",
+            "isUnique":true,
+            "validate":{
+            "isEmail":true
+            },
+            "allowNull":false
+          },
+          "password":{
+            "type":"string"
+          },
+          "confirmPassword":{
+            "type":"string"
+          },
+          "address": {
+            "type": "string"
+           },
+           "phoneNumber":{
+            "type":"number"
+           }
+        }
+      },
+    "permission": {
+      "properties": {
+        "permissionId":{
+          "type":"string",
+          "uniqueItems":true,
+          "primaryKey":true,
+          "format":"UUIDV4"
+        },
+        "role": {
+          "type": "string"
+        },
+        "route":{
+          "type":"string"
+        },
+        "addPermission":{
+          "type":"string"
+        }
+      }
+    },
+    "addPermission": {
+      "properties": {
+        "role": {
+          "type": "string"
+        },
+        "route":{
+          "type":"string"
+        },
+        "addPermission":{
+          "type":"string"
+        }
+      }
+    },
+    "Product": {
+      "properties": {
+        "productId": {
+          "type": "string",
+          "uniqueItems": true,
+          "primaryKey":true,
+          "format":"UUIDV4"
+        },
+        "sellerId":{
+          "type":"string",
+          "format":"UUIDV4"
+        },
+        "productName": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "brand":{
+          "type":"string"
+        },
+        "price": {
+          "type": "number"
+         },
+         "stock":{
+          "type":"number"
+         }
+      }
+    },
+    "addProduct": {
+      "properties": {
+        "productName": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "brand":{
+          "type":"string"
+        },
+        "price": {
+          "type": "number"
+         },
+         "stock":{
+          "type":"number"
+         }
+      }
+    },
+    "updateProduct": {
+      "properties": {
+        "productId": {
+          "type": "string",
+          "uniqueItems": true,
+          "primaryKey":true,
+          "format":"UUIDV4"
+        },
+        "productName": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "brand":{
+          "type":"string"
+        },
+        "price": {
+          "type": "number"
+         },
+         "stock":{
+          "type":"number"
+         }
+      }
+    },
+    "Cart": {
+      "properties": {
+        "cartId": {
+          "type": "string",
+          "uniqueItems": true,
+          "primaryKey":true,
+          "format":"UUIDV4"
+        },
+        "buyerId":{
+          "type":"string",
+          "format":"UUIDV4"
+        },
+        "totalPrice":{
+          "type":"number"
+        }
+      }
+    },
+    "addToCart": {
+      "properties": {
+        "buyerId": {
+          "type": "string",
+          "format":"UUIDV4"
+        },
+        "productId":{
+          "type":"string",
+          "format":"UUIDV4"
+        },
+        "quantity":{
+          "type":"number"
+        }
+      }
+    },
+    "updateCart": {
+      "properties": {
+        "cartId": {
+          "type": "string",
+          "uniqueItems":true,
+          "primaryKey":true,
+          "format":"UUIDV4"
+        },
+        "productId":{
+          "type":"string",
+          "format":"UUIDV4"
+        },
+        "quantity":{
+          "type":"number"
+        }
+      }
+    },
+    "CartDetails": {
+      "properties": {
+        "Id": {
+          "type": "string",
+          "uniqueItems": true,
+          "primaryKey":true,
+          "format":"UUIDV4"
+        },
+        "cartId": {
+          "type": "string",
+          "uniqueItems": true,
+          "primaryKey":true,
+          "format":"UUIDV4"
+        },
+        "productId":{
+          "type":"string",
+          "format":"UUIDV4"
+        },
+        "price":{
+          "type":"number"
+        },
+        "quantity":{
+          "type":"number"
+        },
+        "totalPrice":{
+          "type":"number"
+        }
+      }
+    },
+    "Order": {
+      "properties": {
+        "orderId": {
+          "type": "string",
+          "uniqueItems": true,
+          "primaryKey":true,
+          "format":"UUIDV4"
+        },
+        "buyerId":{
+          "type":"string",
+          "format":"UUIDV4"
+        },
+        "totalPrice":{
+          "type":"number"
+        }
+      }
+    },
+    "placeOrder": {
+      "properties": {
+        "buyerId":{
+          "type":"string",
+          "format":"UUIDV4"
+        }
+      }
+    },
+    "OrderDetails": {
+      "properties": {
+        "Id": {
+          "type": "string",
+          "uniqueItems": true,
+          "primaryKey":true,
+          "format":"UUIDV4"
+        },
+        "orderId": {
+          "type": "string",
+          "format":"UUIDV4"
+        },
+        "productId": {
+          "type": "string",
+          "format":"UUIDV4"
+        },
+        "price": {
+          "type": "number"
+        },
+        "quantity": {
+          "type": "number"
+        },
+        "totalPrice": {
+          "type": "number"
+        }
+      }
+    }
+    }
+  }
+  
