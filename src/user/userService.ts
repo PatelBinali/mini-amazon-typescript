@@ -11,7 +11,6 @@ class userService {
 			throw error;
 		}
 	};
-
 	public userList = async () => {
 		try {
 			return await usermodel.find(
@@ -46,7 +45,7 @@ class userService {
 
 	public deleteUser = async (query:any) => {
 		try {
-			return await usermodel.deleteOne(query);
+			return await usermodel.softDelete(query);
 		}
 		catch (error) {
 			throw error;

@@ -5,12 +5,13 @@ import { jwtToken } from './validation/jwtToken';
 import swaggerJsdoc from './swagger.json';
 import swaggerUi from 'swagger-ui-express';
 import cron from 'node-cron';
+import PORT from './helper/constant';
 // import userCron from './cronjob/userCron';
 // import productCron from './cronjob/productCron';
 import connect from './model/service';
 import { Routes } from './router/index';
 connect.connect();
-const port:number = 4000;
+// const port:number = 4000;
 
 const app:Express = express();
 
@@ -63,6 +64,6 @@ app.post('/refresh', (req, res) => {
 app.use('*/swagger',	swaggerUi.serve, swaggerUi.setup(swaggerJsdoc)
 );
 
-app.listen(port, () => {
-	console.log(`Express Server Running on → port ${port}`);
+app.listen(PORT.PORT, () => {
+	console.log(`Express Server Running on → port ${PORT.PORT}`);
 });

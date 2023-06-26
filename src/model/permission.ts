@@ -1,6 +1,6 @@
-import { Schema, model } from 'mongoose';
-import { softDeletePlugin } from 'soft-delete-plugin-mongoose';
-interface Permission {
+import mongoose, { Schema, model } from 'mongoose';
+import { SoftDeleteModel, softDeletePlugin } from 'soft-delete-plugin-mongoose';
+interface Permission extends mongoose.Document {
     role:String,
     route: String,
 	addPermission:String
@@ -23,5 +23,9 @@ const permissionModel = new Schema<Permission>({
 	timestamps: { createdAt: true, updatedAt: true }
 });
 permissionModel.plugin(softDeletePlugin);
-const permissionmodel = model<Permission>('permission', permissionModel);
+permissionModel.pre('deleteOne',async function() {
+	console.log('Deleted permission', this instanceof mongoose.Query);
+});
+const permissionmodel = model<Permission,SoftDeleteModel<Permission>>('permission', permissionModel);
+permissionmodel.deleteOne();
 export default permissionmodel;

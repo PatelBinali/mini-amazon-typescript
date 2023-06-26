@@ -1,6 +1,6 @@
 import mongoose, { Schema, model } from 'mongoose';
-import { softDeletePlugin } from 'soft-delete-plugin-mongoose';
-interface OrderDetails {
+import { SoftDeleteModel, softDeletePlugin } from 'soft-delete-plugin-mongoose';
+interface OrderDetails extends mongoose.Document {
 	orderId:String,
     productId: String,
     price: number,
@@ -37,7 +37,11 @@ const orderDetails = new Schema<OrderDetails>({
 	timestamps: { createdAt: true, updatedAt: true }
 });
 orderDetails.plugin(softDeletePlugin);
-const orderdetails = model<OrderDetails>('orderdetails', orderDetails);
+orderDetails.pre('deleteOne',async function() {
+	console.log('Deleted orderdetails',this instanceof mongoose.Query);
+});
+const orderdetails = model<OrderDetails,SoftDeleteModel<OrderDetails>>('orderdetails', orderDetails);
+orderdetails.deleteOne();
 orderDetails.path('productId').ref('product');
 orderDetails.path('orderId').ref('order');
 export default orderdetails;

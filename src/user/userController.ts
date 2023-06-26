@@ -180,7 +180,8 @@ class userController {
 					await this.productService.deleteProduct({ sellerId:_id });
 					// await redisCache.deleteCache(_id);
 					await this.userService.deleteUser({ _id });
-					return status.success(res,200,{ message: CONSTANT.MESSAGE.DELETE_USER ,existingUser });
+					const deletedUser = await this.userService.getUser({ _id });
+					return status.success(res,200,{ message: CONSTANT.MESSAGE.DELETE_USER ,deletedUser });
 				}
 				else if (_id === res.locals._id && existingUser.role === 'buyer' || res.locals.role === 'admin') {
 				// buyer
@@ -190,7 +191,8 @@ class userController {
 					// await this.orderService.cancleOrderDetails({ orderId:await this.orderService.order({ buyerId:_id }) });
 					// await redisCache.deleteCache(_id);
 					await this.userService.deleteUser({ _id });
-					return status.success(res,200,{ message: CONSTANT.MESSAGE.DELETE_USER ,existingUser });
+					const deletedUser = await this.userService.getUser({ _id });
+					return status.success(res,200,{ message: CONSTANT.MESSAGE.DELETE_USER ,deletedUser });
 				}
 				else {
 					logger.info({ 'userController deleteUser':CONSTANT.LOGGER.UNAUTHORIZED });
