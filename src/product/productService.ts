@@ -1,7 +1,7 @@
 import productmodel from '../model/productModel';
 
-const Sequelize = require('sequelize');
-const Op = Sequelize.Op;
+// const Sequelize = require('sequelize');
+// const Op = Sequelize.Op;
 
 class productService {
 	public getProduct = async (query:any) => {
@@ -20,32 +20,34 @@ class productService {
 			throw error;
 		}
 	};
-	public productList = async (searchTerm:any,page:any,pageSize:any) => {
+	public productList = async (productName:any) => {
 		try {
-			const limit:number = parseInt(pageSize);
-			const offset:number = (parseInt(page) - 1) * limit;
-			
-			const result = await productmodel.find({
-				[Op.or]: [
-					{ productName: { [Op.like]: `%${searchTerm}%` } },
-					{ category: { [Op.like]: `%${searchTerm}%` } },
-					{ brand: { [Op.like]: `%${searchTerm}%` } },
-					{ price: { [Op.like]: `%${searchTerm}%` } },
-					{ description: { [Op.like]: `%${searchTerm}%` } }
-				],
+			// const limit:number = parseInt(pageSize);
+			// const offset:number = (parseInt(page) - 1) * limit;
+			const result = await productmodel.find(
+				// [Op.or]: [
+				// 	{ productName: { [Op.like]: `%${searchTerm}%` } },
+				// 	{ category: { [Op.like]: `%${searchTerm}%` } },
+				// 	{ brand: { [Op.like]: `%${searchTerm}%` } },
+				// 	{ price: { [Op.like]: `%${searchTerm}%` } },
+				// 	{ description: { [Op.like]: `%${searchTerm}%` } }
+				// ],
 				// paranoid:false,
-				searchTerm,
-				limit,
-				offset
+				{ productName }
+				// limit,
+				// offset
 				// attributes: { exclude: ['createdAt','updatedAt','deletedAt'] }
-			});  
+			);  
 			// const totalPages = Math.ceil(result.count / limit);
-			return {
-				rows: result,
-				// count: result.count,
-				// totalPages,
-				currentPage: parseInt(page)
-			};
+			
+			
+			return result;
+			//  {
+			// 	rows: 
+			// count: result.count,
+			// totalPages,
+			// currentPage: parseInt(page)
+			// };
 		}
 		catch (error) {
 			throw error;

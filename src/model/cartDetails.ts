@@ -1,6 +1,6 @@
 import mongoose, { Schema, model } from 'mongoose';
-import { softDeletePlugin } from 'soft-delete-plugin-mongoose';
-interface CartDetails {
+import { SoftDeleteModel, softDeletePlugin } from 'soft-delete-plugin-mongoose';
+interface CartDetails extends mongoose.Document{
 	cartId:String,
     productId: String,
     price: number,
@@ -12,7 +12,8 @@ const cartDetails = new Schema<CartDetails>({
 		type: mongoose.Schema.Types.ObjectId,
 		onDelete:'cascade',
 		ref:'cart',
-		required:true
+		required:true,
+		isDeleted:{ type: Boolean, defaults: false }
 	},
 	productId: {
 		type: mongoose.Schema.Types.ObjectId,
@@ -39,7 +40,11 @@ const cartDetails = new Schema<CartDetails>({
 }
 );
 cartDetails.plugin(softDeletePlugin);
-const cartdetails = model<CartDetails>('cartdetails', cartDetails);
+cartDetails.pre('deleteOne',async function() {
+	console.log('Deleted cartdetails',this instanceof mongoose.Query);
+});
+const cartdetails = model<CartDetails,SoftDeleteModel<CartDetails>>('cartdetails', cartDetails);
+cartdetails.deleteOne();
 cartDetails.path('cartId').ref('cart');
 cartDetails.path('productId').ref('product');
 export default cartdetails;

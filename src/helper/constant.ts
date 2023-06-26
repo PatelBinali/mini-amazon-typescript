@@ -1,8 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require('dotenv').config();
-
 const NODE_ENV:string|undefined = process.env.NODE_ENV;
-const PORT:string|undefined = process.env.PORT;
+const PORT = process.env.PORT;
 const JWT = {
 	SECRET: 'it-is-secret',
 	EXPIRES: process.env.EXPIRES

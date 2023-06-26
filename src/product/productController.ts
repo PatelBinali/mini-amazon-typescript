@@ -42,8 +42,9 @@ class productController {
 
 	public productList = async (req:Request, res:Response) => {
 		try {
-			let { searchTerm,page,pageSize } = req.query;
-			const products = await this.productService.productList(searchTerm,page,pageSize);
+			// let { searchTerm } = req.query;
+			let { productName } = req.query;
+			const products = await this.productService.productList(productName);
 			return status.success(res,200,products);
 		}
 		catch (error:any) {

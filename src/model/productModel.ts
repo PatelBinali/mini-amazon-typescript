@@ -1,6 +1,6 @@
 import mongoose, { Schema, model } from 'mongoose';
-import { softDeletePlugin } from 'soft-delete-plugin-mongoose';
-interface Product {
+import { SoftDeleteModel, softDeletePlugin } from 'soft-delete-plugin-mongoose';
+interface Product extends mongoose.Document {
 	sellerId:String,
     productName: String,
     description: String,
@@ -44,6 +44,10 @@ const productModel = new Schema<Product>({
 	timestamps: { createdAt: true, updatedAt: true }
 });
 productModel.plugin(softDeletePlugin);
-const productmodel = model<Product>('product', productModel);
+productModel.pre('deleteMany',async function() {
+	console.log('Deleted product',this instanceof mongoose.Query);
+});
+const productmodel = model<Product,SoftDeleteModel<Product>>('product', productModel);
+productmodel.deleteOne();
 productModel.path('sellerId').ref('user');
 export default productmodel;

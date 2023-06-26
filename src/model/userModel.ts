@@ -1,14 +1,17 @@
-import { Schema, model } from 'mongoose';
-import { softDeletePlugin } from 'soft-delete-plugin-mongoose';
+import mongoose, { Schema } from 'mongoose';
+import { SoftDeleteModel, softDeletePlugin } from 'soft-delete-plugin-mongoose';
 
-interface User {
+interface User extends mongoose.Document{
+	// _id:string,
     role:String,
     firstName: String,
     lastName: String,
     email: String,
     password: string,
     address: String,
-    phoneNumber: String,
+    phoneNumber: String
+	// isDeleted:Boolean
+	// DeletedAt:Date
 }
 const userModel = new Schema<User>({
 	role: {
@@ -40,10 +43,24 @@ const userModel = new Schema<User>({
 		type: Number,
 		required:true
 	}
-}, {
+	// isDeleted:{
+	// 	type:Boolean,
+	// 	require:true,
+	// 	default:false
+	// },
+	// DeletedAt:{
+	// 	type:Date,
+	// 	default:null
+	// }
+},
+{
 	versionKey: false,
 	timestamps: { createdAt: true, updatedAt: true }
 });
 userModel.plugin(softDeletePlugin);
-const usermodel = model<User>('user', userModel);
+userModel.pre('save',function(next) {
+	next();
+});
+const usermodel = mongoose.model<User,SoftDeleteModel<User>>('user', userModel);
+usermodel.deleteOne();
 export default usermodel;
