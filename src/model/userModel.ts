@@ -9,9 +9,9 @@ interface User extends mongoose.Document{
     email: String,
     password: string,
     address: String,
-    phoneNumber: String
+    phoneNumber: String,
 	// isDeleted:Boolean
-	// DeletedAt:Date
+	deletedAt:Date
 }
 const userModel = new Schema<User>({
 	role: {
@@ -42,16 +42,16 @@ const userModel = new Schema<User>({
 	phoneNumber: {
 		type: Number,
 		required:true
-	}
+	},
 	// isDeleted:{
 	// 	type:Boolean,
 	// 	require:true,
 	// 	default:false
 	// },
-	// DeletedAt:{
-	// 	type:Date,
-	// 	default:null
-	// }
+	deletedAt:{
+		type:Date,
+		default:null
+	}
 },
 {
 	versionKey: false,

@@ -63,16 +63,16 @@ class orderService {
 
 	public cancleOrder = async (query:any) => {
 		try {
-			return await ordermodel.deleteOne(query);
+			return await ordermodel.softDelete(query);
 		}
 		catch (error) {
 			throw error;
 		}
 	};
 
-	public orderDetails = async (orderDetails:any) => {
+	public orderDetail = async (orderDetail:any) => {
 		try {
-			return await orderDetails.create(orderDetails);
+			return await orderDetails.create(orderDetail);
 		}
 		catch (error) {
 			throw error;
@@ -90,7 +90,7 @@ class orderService {
 
 	public cancleOrderDetails = async (query:any) => {
 		try {
-			return await orderDetails.deleteOne(query);
+			return await orderDetails.softDelete(query);
 		}
 		catch (error) {
 			throw error;

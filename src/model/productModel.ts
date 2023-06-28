@@ -8,6 +8,7 @@ interface Product extends mongoose.Document {
     brand: String,
     price: number,
     stock: number,
+	deletedAt:Date
 }
 const productModel = new Schema<Product>({
 	sellerId: {
@@ -38,6 +39,10 @@ const productModel = new Schema<Product>({
 	stock: {
 		type: Number,
 		required:true
+	},
+	deletedAt:{
+		type:Date,
+		default:null
 	}
 }, {
 	versionKey: false,

@@ -3,7 +3,8 @@ import { SoftDeleteModel, softDeletePlugin } from 'soft-delete-plugin-mongoose';
 interface Permission extends mongoose.Document {
     role:String,
     route: String,
-	addPermission:String
+	addPermission:String,
+	deletedAt:Date
 }
 const permissionModel = new Schema<Permission>({
 	role: {
@@ -17,6 +18,10 @@ const permissionModel = new Schema<Permission>({
 	addPermission: {
 		type: String,
 		required:true
+	},
+	deletedAt:{
+		type:Date,
+		default:null
 	}
 }, {
 	versionKey: false,

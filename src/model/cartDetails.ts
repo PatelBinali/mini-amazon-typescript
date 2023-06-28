@@ -5,7 +5,8 @@ interface CartDetails extends mongoose.Document{
     productId: String,
     price: number,
     quantity: number,
-    totalPrice: number
+    totalPrice: number,
+	deletedAt:Date
 }
 const cartDetails = new Schema<CartDetails>({
 	cartId: {
@@ -32,6 +33,10 @@ const cartDetails = new Schema<CartDetails>({
 	totalPrice: {
 		type: Number,
 		required:true
+	},
+	deletedAt:{
+		type:Date,
+		default:null
 	}
 },
 {
