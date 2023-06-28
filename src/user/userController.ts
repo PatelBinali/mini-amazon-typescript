@@ -85,7 +85,8 @@ class userController {
 	};
 	public userList = async (req: Request, res: Response) => {
 		try {
-			const userList = await this.userService.userList();
+			const { searchTerm } = req.query;
+			const userList = await this.userService.userList(searchTerm);
 			return status.success(res,200,userList);
 		}
 		catch (error:any) {
@@ -98,7 +99,7 @@ class userController {
 		try {
 			const user:user = req.body;
 			const existingUser = await this.userService.getUser({ email:user.email });
-			if (existingUser && existingUser!.deletedAt) {
+			if (!existingUser) {
 				if (user.role === 'admin') {
 					const pass:string = await this.bcryptPassword.bcryptPassword(user.password);
 					user.password = pass;
@@ -111,7 +112,7 @@ class userController {
 					return status.errors(res,401,{ message:CONSTANT.USER.UNAUTHORIZED,name:'' });
 				}
 			}
-			else if (existingUser && !existingUser!.deletedAt) {
+			else if (existingUser) {
 				logger.info({ 'userController adminSignUp':CONSTANT.LOGGER.BAD_REQUEST_EMAIL });
 				return status.errors(res,400,{ message:CONSTANT.USER.BAD_REQUEST_EMAIL,name:'' });
 			}

@@ -1,3 +1,4 @@
+import { ObjectId } from 'mongodb';
 import orderDetails from '../model/orderDetails';
 import ordermodel from '../model/orderModel';
 
@@ -91,6 +92,58 @@ class orderService {
 	public cancleOrderDetails = async (query:any) => {
 		try {
 			return await orderDetails.softDelete(query);
+		}
+		catch (error) {
+			throw error;
+		}
+	};
+
+	public getAllDetails = async (orderId:any) => {
+		try {
+			const result = orderDetails.aggregate(
+				[
+					{
+						$match: {
+							orderId: new ObjectId(`${orderId}`)
+						}
+					},
+					{
+						$lookup: {
+							from: 'products',
+							localField: 'productId',
+							foreignField: '_id',
+							as: 'productData'
+						}
+					},
+					{
+						$lookup: {
+							from: 'users',
+							localField: 'productData.sellerId',
+							foreignField: '_id',
+							as: 'sellerData'
+						}
+					},
+					{
+						$project: {
+							_id: 1,
+							orderId: 1,
+							productId: 1,
+							price: 1,
+							quantity: 1,
+							totalPrice: 1,
+							productData: {
+								productName: 2,
+								description: 2,
+								category: 2,
+								brand: 2
+							},
+							sellerData: { firstName: 3, lastName: 3 }
+						}
+					}					
+				],
+				{ maxTimeMS: 60000, allowDiskUse: true }
+			);
+			return result;
 		}
 		catch (error) {
 			throw error;

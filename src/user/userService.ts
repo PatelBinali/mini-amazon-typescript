@@ -11,14 +11,24 @@ class userService {
 			throw error;
 		}
 	};
-	public userList = async () => {
+	public userList = async (searchTerm:any) => {
 		try {
-			return await usermodel.find(
-				// 	{ 
-				// 	paranoid:false,
-				// 	attributes: { exclude: ['password','createdAt','updatedAt','deletedAt'] } 
-				// }
+			const result = usermodel.aggregate(
+				[
+					{
+						$match: { $or:[
+							{ firstName:{ $regex:`${searchTerm}`,$options:'i' } },
+							{ lastName:{ $regex: `${searchTerm}`,$options:'i' } },
+							{ address:{ $regex: `${searchTerm}`,$options:'i' } },
+							{ role:{ $regex: `${searchTerm}`,$options:'i' } },
+							{ email:{ $regex: `${searchTerm}`,$options:'i' } }
+						] }
+					}
+					// { $limit:1 }
+				],
+				{ maxTimeMS: 60000, allowDiskUse: true }
 			);
+			return result;
 		}
 		catch (error) {
 			throw error;
