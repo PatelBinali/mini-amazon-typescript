@@ -35,7 +35,7 @@ class userController {
 			const { _id:string } = req.query;
 			// const cacheData = JSON.parse(await redisCache.getCache(_id));
 			// if (cacheData === null) {
-			const user:object|null = await this.userService.getUser({ _id:string });
+			const user:object|null = await this.userService.getUser({ _id:string,deletedAt:{ $eq:null } });
 			if (!user) {
 				logger.info({ 'userController getUser':CONSTANT.LOGGER.USER_NOT_FOUND });
 				return status.errors(res,404,{ message: CONSTANT.USER.USER_NOT_FOUND,name: '' });
@@ -59,7 +59,8 @@ class userController {
 		try {
 			const email:string = req.body.email;
 			const password:string = req.body.password;
-			const userData = await this.userService.getUser({ email });
+			const userData = await this.userService.getUser({ email,deletedAt:{ $eq:null } });
+			// console.log(userData);
 			if (!userData) {
 				logger.info({ 'userController login':CONSTANT.LOGGER.INVALID_DATA });
 				return status.errors(res,404,{ message:CONSTANT.USER.INVALID_DATA,name:'' });
@@ -96,8 +97,8 @@ class userController {
 	public adminSignUp = async (req:Request, res:Response) => {
 		try {
 			const user:user = req.body;
-			const existingUser:object | null = await this.userService.getUser({ email:user.email });
-			if (!existingUser) {
+			const existingUser = await this.userService.getUser({ email:user.email });
+			if (existingUser && existingUser!.deletedAt) {
 				if (user.role === 'admin') {
 					const pass:string = await this.bcryptPassword.bcryptPassword(user.password);
 					user.password = pass;
@@ -110,7 +111,7 @@ class userController {
 					return status.errors(res,401,{ message:CONSTANT.USER.UNAUTHORIZED,name:'' });
 				}
 			}
-			else {
+			else if (existingUser && !existingUser!.deletedAt) {
 				logger.info({ 'userController adminSignUp':CONSTANT.LOGGER.BAD_REQUEST_EMAIL });
 				return status.errors(res,400,{ message:CONSTANT.USER.BAD_REQUEST_EMAIL,name:'' });
 			}
@@ -150,12 +151,12 @@ class userController {
 		try {
 			const user = req.body;
 			const token_id = res.locals._id;
-			const existingUser = await this.userService.getUser({ _id:token_id });
-			if (user._id === existingUser?._id || res.locals.role === 'admin') {
+			const existingUser = await this.userService.getUser({ _id:token_id,deletedAt:{ $eq:null } });
+			if (user._id === existingUser!._id.toString() || res.locals.role === 'admin') {
 				const pass:string = await this.bcryptPassword.bcryptPassword(user.password);
 				user.password = pass;
-				const updatedUser:UpdateWriteOpResult = await this.userService.updateUser({ _id:user._id },user);
-				const updated:object|null = await this.userService.getUser({ _id:user._id });
+				const updatedUser:UpdateWriteOpResult = await this.userService.updateUser({ _id:user._id,deletedAt:{ $eq:null } },user);
+				const updated:object|null = await this.userService.getUser({ _id:user._id,deletedAt:{ $eq:null } });
 				// await redisCache.setCache(updated._id,updated);
 				return status.success(res,200,{ updatedUser,updated });
 			}
@@ -173,7 +174,7 @@ class userController {
 	public deleteUser = async (req:Request,res:Response) => {
 		try {
 			const { _id } = req.query;
-			const existingUser = await this.userService.getUser({ _id });
+			const existingUser = await this.userService.getUser({ _id,deletedAt:{ $eq:null } });
 			if (existingUser) {
 				if (_id === res.locals._id && existingUser.role === 'seller' || res.locals.role === 'admin') {
 				// seller
@@ -236,7 +237,7 @@ class userController {
 	public deletePermission = async (req:Request, res:Response) => {
 		try {
 			const { _id } = req.query;
-			const permission:object | null = await this.userService.getPermission(_id);
+			const permission:object | null = await this.userService.getPermission({ _id,deletedAt:{ $eq:null } });
 			if (permission) {
 				await this.userService.deletePermission({ permissionId:_id });
 				return status.success(res,200,{ message:CONSTANT.ADMIN.PERMISSION_DELETED });

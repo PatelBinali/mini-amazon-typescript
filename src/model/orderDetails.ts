@@ -5,7 +5,8 @@ interface OrderDetails extends mongoose.Document {
     productId: String,
     price: number,
     quantity: number,
-    totalPrice: number
+    totalPrice: number,
+	deletedAt:Date
 }
 const orderDetails = new Schema<OrderDetails>({
 	orderId: {
@@ -31,6 +32,10 @@ const orderDetails = new Schema<OrderDetails>({
 	totalPrice: {
 		type: Number,
 		required:true
+	},
+	deletedAt:{
+		type:Date,
+		default:null
 	}
 }, {
 	versionKey: false,

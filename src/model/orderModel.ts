@@ -2,7 +2,8 @@ import mongoose, { Schema, model } from 'mongoose';
 import { SoftDeleteModel, softDeletePlugin } from 'soft-delete-plugin-mongoose';
 interface Order extends mongoose.Document{
     buyerId:String,
-    totalPrice: number
+    totalPrice: number,
+	deletedAt:Date
 }
 const orderModel = new Schema<Order>({
 	buyerId: {
@@ -14,6 +15,10 @@ const orderModel = new Schema<Order>({
 	totalPrice: {
 		type: Number,
 		required:true
+	},
+	deletedAt:{
+		type:Date,
+		default:null
 	}
 }, {
 	versionKey: false,

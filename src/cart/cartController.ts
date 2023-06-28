@@ -23,8 +23,8 @@ class cartController {
 			const { _id } = req.query;
 			// const cacheData = JSON.parse(await redisCache.getCache(cartId));
 			// if (cacheData === null) {
-			const cart = await this.cartService.getCart({ _id });
-			const getCartData = await this.cartService.getCartDetails({ _id });
+			const cart = await this.cartService.getCart({ _id,deletedAt:{ $eq:null } });
+			const getCartData = await this.cartService.getCartDetails({ _id,deletedAt:{ $eq:null } });
 			// await redisCache.setCache(getCartData.cartId,getCartData);
 			return status.success(res,200,{ getCartData,totalPrice:cart?.totalPrice });
 		// }
@@ -42,12 +42,12 @@ class cartController {
 		try { 
 			const cartData:cart = req.body;
 			if (cartData.buyerId === res.locals._id || res.locals.role === 'admin') {
-				const buyer = await this.userService.getUser({ _id:cartData.buyerId });
+				const buyer = await this.userService.getUser({ _id:cartData.buyerId,deletedAt:{ $eq:null } });
 				if (buyer) {
-					const existingCart = await this.cartService.getCart({ buyerId:cartData.buyerId });
+					const existingCart = await this.cartService.getCart({ buyerId:cartData.buyerId,deletedAt:{ $eq:null } });
 					if (!existingCart) {
 						const addToCart = await this.cartService.addCart({ buyerId:cartData.buyerId });
-						const productData = await this.productService.getProduct({ _id:cartData.productId });
+						const productData = await this.productService.getProduct({ _id:cartData.productId,deletedAt:{ $eq:null } });
 						if (productData) {
 							const cartDetails = await this.cartService.addCartDetails(
 								{
@@ -65,7 +65,7 @@ class cartController {
 								return status.errors(res,404,{ message:CONSTANT.CART.OUT_OF_STOCK,name:'' });
 							}
 							else {
-								await this.cartService.updateCart({ _id:addToCart._id },{ totalPrice:total });
+								await this.cartService.updateCart({ _id:addToCart._id,deletedAt:{ $eq:null } },{ totalPrice:total });
 								// await redisCache.setCache(addToCart.cartId,addToCart);
 								return status.success(res,200,addToCart);
 							}
@@ -76,8 +76,8 @@ class cartController {
 						}
 					}
 					else {
-						const existingCartDetails = await this.cartService.getCartDetails({ cartId:existingCart._id });
-						const productData = await this.productService.getProduct({ _id:cartData.productId });
+						const existingCartDetails = await this.cartService.getCartDetails({ cartId:existingCart._id,deletedAt:{ $eq:null } });
+						const productData = await this.productService.getProduct({ _id:cartData.productId,deletedAt:{ $eq:null } });
 						const array = [];
 						for (let i = 0;i < existingCartDetails.length;i++) {
 							const cart = existingCartDetails[i];
@@ -93,9 +93,9 @@ class cartController {
 								return status.errors(res,404,{ message:CONSTANT.CART.OUT_OF_STOCK,name:'' });
 							}
 							else {
-								await this.cartService.updateCartDetails({ cartId:existingCart._id, productId:obj.productId },{ totalPrice:total,quantity:quantity });
+								await this.cartService.updateCartDetails({ cartId:existingCart._id, productId:obj.productId,deletedAt:{ $eq:null } },{ totalPrice:total,quantity:quantity });
 								const newTotal:number = existingCart.totalPrice += newPrice;							
-								await this.cartService.updateCart({ _id:existingCart._id },{ totalPrice:newTotal });
+								await this.cartService.updateCart({ _id:existingCart._id,deletedAt:{ $eq:null } },{ totalPrice:newTotal });
 							}
 						}
 						else {
@@ -114,7 +114,7 @@ class cartController {
 							else {
 								const cartDetails = await this.cartService.addCartDetails(data);	
 								const totals:number = existingCart.totalPrice += cartDetails.totalPrice;
-								await this.cartService.updateCart({ _id:existingCart._id },{ totalPrice:totals });
+								await this.cartService.updateCart({ _id:existingCart._id,deletedAt:{ $eq:null } },{ totalPrice:totals });
 							}
 						}
 						// await redisCache.setCache(existingCart.cartId,existingCart);						
@@ -140,10 +140,10 @@ class cartController {
 	public updateCart = async (req:Request, res:Response) => {
 		try {
 			const cartData = req.body;
-			const checkProduct = await this.productService.getProduct({ _id:cartData.productId });
+			const checkProduct = await this.productService.getProduct({ _id:cartData.productId,deletedAt:{ $eq:null } });
 			if (checkProduct) {
-				const cartProduct = await this.cartService.getCart({ _id: cartData.cartId });
-				if (cartProduct?.buyerId === res.locals._id || res.locals.role === 'admin') {
+				const cartProduct = await this.cartService.getCart({ _id: cartData.cartId,deletedAt:{ $eq:null } });
+				if (cartProduct?.buyerId.toString() === res.locals._id || res.locals.role === 'admin') {
 					cartData.price = checkProduct.price;
 					cartData.totalPrice = cartData.quantity * checkProduct.price;
 					if (cartData.quantity > checkProduct.stock) {
@@ -151,14 +151,14 @@ class cartController {
 						return status.errors(res,404,{ message:CONSTANT.CART.OUT_OF_STOCK,name:'' });
 					}
 					else {
-						const updateData:UpdateWriteOpResult = await this.cartService.updateCartDetails({ cartId:cartData.cartId, productId:cartData.productId },cartData);
-						const allCartDetails = await this.cartService.getCartDetails({ cartId:cartData.cartId });
+						const updateData:UpdateWriteOpResult = await this.cartService.updateCartDetails({ cartId:cartData.cartId, productId:cartData.productId,deletedAt:{ $eq:null } },cartData);
+						const allCartDetails = await this.cartService.getCartDetails({ cartId:cartData.cartId,deletedAt:{ $eq:null } });
 						let sum = 0;
 						for (let i = 0;i < allCartDetails.length;i++) {
 							sum += allCartDetails[i].totalPrice;
 						}
-						await this.cartService.updateCart({ _id:cartData.cartId },{ totalPrice:sum });
-						const updated:object|null = await this.cartService.getCartDetails({ cartId:cartData.cartId, productId:cartData.productId });
+						await this.cartService.updateCart({ _id:cartData.cartId,deletedAt:{ $eq:null } },{ totalPrice:sum });
+						const updated:object|null = await this.cartService.getCartDetails({ cartId:cartData.cartId, productId:cartData.productId,deletedAt:{ $eq:null } });
 						// await redisCache.setCache(updated.cartId,updated);
 						return status.success(res,200,{ updateData,updated });
 					}
@@ -182,8 +182,8 @@ class cartController {
 	public deleteCart = async (req:Request, res:Response) => {
 		try {
 			const { _id } = req.query;
-			const cart = await this.cartService.getCart({ _id });
-			if (cart?.buyerId === res.locals._id || res.locals.role === 'admin') {
+			const cart = await this.cartService.getCart({ _id,deletedAt:{ $eq:null } });
+			if (cart?.buyerId.toString() === res.locals._id || res.locals.role === 'admin') {
 				await this.cartService.deleteCartDetails({ cartId:_id });
 				// await redisCache.deleteCache(cartId);
 				await this.cartService.deleteCart({ _id });
@@ -203,12 +203,12 @@ class cartController {
 	public deleteCartDetails = async (req:Request, res:Response) => {
 		try {
 			const { _id } = req.query;
-			const cartDetails = await this.cartService.getCartDetail({ _id });
-			const cart = await this.cartService.getCart({ _id:cartDetails?.cartId });
-			if (cart?.buyerId === res.locals._id || res.locals.role === 'admin') {
-				const existingCart = await this.cartService.getCart({ _id:cartDetails?.cartId });
+			const cartDetails = await this.cartService.getCartDetail({ _id,deletedAt:{ $eq:null } });
+			const cart = await this.cartService.getCart({ _id:cartDetails?.cartId.toString(),deletedAt:{ $eq:null } });
+			if (cart?.buyerId.toString() === res.locals._id || res.locals.role === 'admin') {
+				const existingCart = await this.cartService.getCart({ _id:cartDetails?.cartId.toString(),deletedAt:{ $eq:null } });
 			existingCart!.totalPrice! -= cartDetails!.totalPrice;
-			await this.cartService.updateCart({ _id:existingCart?._id },{ totalPrice:existingCart?.totalPrice });
+			await this.cartService.updateCart({ _id:existingCart?._id,deletedAt:{ $eq:null } },{ totalPrice:existingCart?.totalPrice });
 			// await redisCache.deleteCache(Id);
 			await this.cartService.deleteCartDetails({ _id });
 			return status.success(res,200,{ message: CONSTANT.MESSAGE.DELETE_CART ,cartDetails });

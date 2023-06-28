@@ -11,6 +11,7 @@ const addProduct = joi.object({
 
 const updateProduct = joi.object({
 	_id:joi.string().required(),
+	sellerId:joi.string(),
 	productName: joi.string(),
 	description: joi.string(), 
 	category: joi.string(),

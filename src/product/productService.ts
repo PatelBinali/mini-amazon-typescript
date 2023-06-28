@@ -20,28 +20,45 @@ class productService {
 			throw error;
 		}
 	};
-	public productList = async (productName:any) => {
+	
+	public productList = async (searchTerm:any) => {
 		try {
+			// const url = 'mongodb://localhost:27017/userMongo';
+			const p = productmodel.aggregate(
+				[
+					{
+						$match: {
+							// productName: `${searchTerm}`
+							category: `${searchTerm}`
+						}
+					}
+					// { $project: { price: `${searchTerm}` } }
+				],
+				{ maxTimeMS: 60000, allowDiskUse: true }
+			);
+			return p;
+			
 			// const limit:number = parseInt(pageSize);
 			// const offset:number = (parseInt(page) - 1) * limit;
-			const result = await productmodel.find(
-				// [Op.or]: [
-				// 	{ productName: { [Op.like]: `%${searchTerm}%` } },
-				// 	{ category: { [Op.like]: `%${searchTerm}%` } },
-				// 	{ brand: { [Op.like]: `%${searchTerm}%` } },
-				// 	{ price: { [Op.like]: `%${searchTerm}%` } },
-				// 	{ description: { [Op.like]: `%${searchTerm}%` } }
-				// ],
-				// paranoid:false,
-				{ productName }
-				// limit,
-				// offset
-				// attributes: { exclude: ['createdAt','updatedAt','deletedAt'] }
-			);  
+			// const result = await productmodel.find(
+			// 	// [Op.or]: [
+			// 	// 	{ productName: { [Op.like]: `%${searchTerm}%` } },
+			// 	// 	{ category: { [Op.like]: `%${searchTerm}%` } },
+			// 	// 	{ brand: { [Op.like]: `%${searchTerm}%` } },
+			// 	// 	{ price: { [Op.like]: `%${searchTerm}%` } },
+			// 	// 	{ description: { [Op.like]: `%${searchTerm}%` } }
+			// 	// ],
+			// 	// paranoid:false,
+			// 	{ productName:{ $eq:searchTerm },
+			// 		deletedAt:{ $eq:null } }
+			// 	// limit,
+			// 	// offset
+			// 	// attributes: { exclude: ['createdAt','updatedAt','deletedAt'] }
+			// );  
 			// const totalPages = Math.ceil(result.count / limit);
 			
 			
-			return result;
+			// return result;
 			//  {
 			// 	rows: 
 			// count: result.count,
@@ -74,7 +91,7 @@ class productService {
 
 	public deleteProduct = async (query:any) => {
 		try {
-			return await productmodel.deleteOne(query);
+			return await productmodel.softDelete(query);
 		}
 		catch (error) {
 			throw error;

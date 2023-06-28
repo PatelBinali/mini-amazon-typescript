@@ -20,7 +20,7 @@ class productController {
 			const { _id:string } = req.query;
 			// const cacheData = JSON.parse(await redisCache.getCache(productId));
 			// if (cacheData === null) {
-			const productData:object | null = await this.productService.getProducts({ _id:string });
+			const productData:object | null = await this.productService.getProducts({ _id:string,deletedAt:{ $eq:null } });
 			if (!productData) {
 				logger.info({ 'productController getProduct':CONSTANT.LOGGER.PRODUCT_NOT_FOUND });
 				return status.errors(res,404,{ message:CONSTANT.PRODUCT.PRODUCT_NOT_FOUND,name:'' });
@@ -42,9 +42,9 @@ class productController {
 
 	public productList = async (req:Request, res:Response) => {
 		try {
-			// let { searchTerm } = req.query;
-			let { productName } = req.query;
-			const products = await this.productService.productList(productName);
+			let { searchTerm } = req.query;
+			// let { productName } = req.query;
+			const products = await this.productService.productList(searchTerm);
 			return status.success(res,200,products);
 		}
 		catch (error:any) {
@@ -70,9 +70,9 @@ class productController {
 	public updateProduct = async (req:Request, res:Response) => {
 		try {
 			const productData:productData = req.body;
-			const existingProduct = await this.productService.getProduct({ _id:productData._id });			
-			if (existingProduct?.sellerId === res.locals._id || res.locals.role === 'admin') {
-				const updatedProduct:UpdateWriteOpResult = await this.productService.updateProduct({ _id:productData._id },productData);
+			const existingProduct = await this.productService.getProduct({ _id:productData._id,deletedAt:{ $eq:null } });
+			if (existingProduct!.sellerId.toString() === res.locals._id || res.locals.role === 'admin') {
+				const updatedProduct:UpdateWriteOpResult = await this.productService.updateProduct({ _id:productData._id,deletedAt:{ $eq:null } },productData);
 				const existingCart = await this.cartService.getCartDetails({ productId:productData._id });
 				if (existingCart) {
 					for (let i = 0;i < existingCart.length;i++) {
@@ -109,9 +109,9 @@ class productController {
 	public deleteProduct = async (req:Request, res:Response) => {
 		try {
 			const { _id } = req.query;
-			const existingProduct = await this.productService.getProduct({ _id });
-			if (existingProduct?.sellerId === res.locals._id || res.locals.role === 'admin') {
-				await this.productService.deleteProduct({ _id:_id,sellerId:existingProduct?.sellerId });
+			const existingProduct = await this.productService.getProduct({ _id,deletedAt:{ $eq:null } });
+			if (existingProduct?.sellerId.toString() === res.locals._id || res.locals.role === 'admin') {
+				await this.productService.deleteProduct({ _id:_id,sellerId:existingProduct?.sellerId.toString() });
 				// await redisCache.deleteCache(productId);
 				return status.success(res,200,{ message:CONSTANT.MESSAGE.DELETE_PRODUCT, existingProduct });
 			}

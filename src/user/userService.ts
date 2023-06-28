@@ -81,7 +81,7 @@ class userService {
 
 	public deletePermission = async (query:any) => {
 		try {
-			return await permissionmodel.deleteOne(query);
+			return await permissionmodel.softDelete(query);
 		}
 		catch (error) {
 			throw error;
