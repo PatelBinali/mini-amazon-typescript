@@ -21,6 +21,17 @@ class orderController {
 		this.orderService = new orderService();
 	}
 
+	public getAllDetails = async (req:Request,res:Response) => {
+		try {
+			const { orderId } = req.query;
+			const details = await this.orderService.getAllDetails(orderId);
+			return status.success(res,200,details);
+		}
+		catch (error:any) {
+			logger.error({ 'error':error.message, 'orderController getOrderDetailsById':CONSTANT.LOGGER.INTERNAL_SERVER_ERROR });
+			return status.errors(res,500,error);
+		}
+	};
 	public getOrder = async (req:Request, res:Response) => {
 		try {
 			const { orderId } = req.query;

@@ -16,6 +16,8 @@ export class order {
 	}
     
 	route(): void {
+		this.router.get('/getAllDetails',this.auth.authenticateToken,this.orderController.getAllDetails);
+
 		this.router.get('/getOrder',[this.auth.authenticateToken,queryValidate(getOrder)],this.orderController.getOrder);
         
 		this.router.post('/placeOrder',[this.auth.authenticateToken,schemaValidate(placeOrder)],this.orderController.placeOrder);

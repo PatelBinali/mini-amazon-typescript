@@ -21,50 +21,36 @@ class productService {
 		}
 	};
 	
-	public productList = async (searchTerm:any) => {
+	public productList = async (searchTerm:any,price:any) => {
 		try {
-			// const url = 'mongodb://localhost:27017/userMongo';
-			const p = productmodel.aggregate(
+			const cost = parseInt(price);
+			// const result = await productmodel.find({ 
+			// 	$or:[
+			// 		{ productName:{ $regex: `${searchTerm}`,$options:'i' } },
+			// 		{ category:{ $regex: `${searchTerm}`,$options:'i' } },
+			// 		{ brand:{ $regex: `${searchTerm}`,$options:'i' } },
+			// 		{ description:{ $regex: `${searchTerm}`,$options:'i' } }
+			// 		// { price:{ $regex: `${searchTerm}` ,$options:'/^[0-9]+$/' } }
+			// 	] 
+			// });
+			const result = productmodel.aggregate(
 				[
 					{
-						$match: {
-							// productName: `${searchTerm}`
-							category: `${searchTerm}`
+						$match: { $or:[
+							{ productName: { $regex:`${searchTerm}`,$options:'i' } },
+							{ category:{ $regex: `${searchTerm}`,$options:'i' } },
+							{ brand:{ $regex: `${searchTerm}`,$options:'i' } },
+							{ description:{ $regex: `${searchTerm}`,$options:'i' } }
+						],
+						$expr:{ $gt:[{ $getField:'price' },cost] } 
 						}
 					}
+					// { $limit:1 }
 					// { $project: { price: `${searchTerm}` } }
 				],
 				{ maxTimeMS: 60000, allowDiskUse: true }
 			);
-			return p;
-			
-			// const limit:number = parseInt(pageSize);
-			// const offset:number = (parseInt(page) - 1) * limit;
-			// const result = await productmodel.find(
-			// 	// [Op.or]: [
-			// 	// 	{ productName: { [Op.like]: `%${searchTerm}%` } },
-			// 	// 	{ category: { [Op.like]: `%${searchTerm}%` } },
-			// 	// 	{ brand: { [Op.like]: `%${searchTerm}%` } },
-			// 	// 	{ price: { [Op.like]: `%${searchTerm}%` } },
-			// 	// 	{ description: { [Op.like]: `%${searchTerm}%` } }
-			// 	// ],
-			// 	// paranoid:false,
-			// 	{ productName:{ $eq:searchTerm },
-			// 		deletedAt:{ $eq:null } }
-			// 	// limit,
-			// 	// offset
-			// 	// attributes: { exclude: ['createdAt','updatedAt','deletedAt'] }
-			// );  
-			// const totalPages = Math.ceil(result.count / limit);
-			
-			
-			// return result;
-			//  {
-			// 	rows: 
-			// count: result.count,
-			// totalPages,
-			// currentPage: parseInt(page)
-			// };
+			return result;
 		}
 		catch (error) {
 			throw error;
