@@ -7,7 +7,7 @@ import { productService } from '../product/productService';
 import { cartService } from '../cart/cartService';
 import status from '../helper/statusCode';
 import { order } from '../helper/routerInterface';
-// import redisCache from '../redis/redisCache';
+import redis from '../redis/redisCache';
 
 class orderController {
 	public userService:userService;
@@ -23,31 +23,30 @@ class orderController {
 	public getOrder = async (req:Request, res:Response) => {
 		try {
 			const { orderId } = req.query as {orderId:string};
-			// const orderCache = JSON.parse(await redisCache.getCache(orderId));
-			// if (orderCache === null) {
-			const getOrderDetails = await this.orderService.getOrderDetailsById(orderId);
-			// const order = await this.orderService.order({ _id:orderId,deletedAt:{ $eq:null } });
-			// let arr = [];
-			// console.log('i');
-			// for (let i = 0; i < getOrderDetails.length;i++) {
-			// 	let array = {
-			// 		Id:getOrderDetails[i].Id,
-			// 		orderId:getOrderDetails[i].orderId,
-			// 		productId:getOrderDetails[i].productId,
-			// 		price:getOrderDetails[i].price,
-			// 		quantity:getOrderDetails[i].quantity,
-			// 		totalPrice:getOrderDetails[i].totalPrice
-			// 	};
-			// 	arr.push(array);
-			// 	// console.log(array);
-			// }
-			// console.log(arr);
-			// await redisCache.setCache(getOrderDetails.orderId,getOrderDetails);
-			return status.success(res,200,getOrderDetails);
-		// }
-		// else {
-		// 	return res.json(orderCache);
-		// }
+			const orderCache = JSON.parse(await redis.getCache(orderId)as string);
+			if (orderCache === null) {
+				const getOrderDetails = await this.orderService.getOrderDetailsById(orderId);
+				// const order = await this.orderService.order({ _id:orderId,deletedAt:{ $eq:null } });
+				// let arr = [];
+				// console.log('i');
+				// for (let i = 0; i < getOrderDetails.length;i++) {
+				// 	let array = {
+				// 		Id:getOrderDetails[i].Id,
+				// 		orderId:getOrderDetails[i].orderId,
+				// 		productId:getOrderDetails[i].productId,
+				// 		price:getOrderDetails[i].price,
+				// 		quantity:getOrderDetails[i].quantity,
+				// 		totalPrice:getOrderDetails[i].totalPrice
+				// 	};
+				// 	arr.push(array);
+				// console.log(array);
+				// }
+				await redis.setCache(getOrderDetails[1].orderId,getOrderDetails);
+				return status.success(res,200,getOrderDetails);
+			}
+			else {
+				return res.json(orderCache);
+			}
 		}
 		catch (error:any) {
 			logger.error({ 'error':error.message, 'orderController getOrderDetailsById':CONSTANT.LOGGER.INTERNAL_SERVER_ERROR });
@@ -64,7 +63,7 @@ class orderController {
 				if (cart) {
 					placeOrder.totalPrice = cart.totalPrice;
 					const orderData = await this.orderService.placeOrder(placeOrder);
-					// await redisCache.setCache(orderData.orderId,orderData);
+					await redis.setCache(orderData._id,orderData);
 					if (orderData) {
 						const cartDetails = await this.cartService.getCartDetails({ cartId:cart._id,deletedAt:{ $eq:null } });
 						const orderId:String = orderData._id;
@@ -87,19 +86,20 @@ class orderController {
 							}
 						}
 						await this.orderService.orderDetail(orderDetail);
-						// let arr = [];
-						// for (let i = 0;i < details.length;i++) {
-						// 	let array = {
-						// 		Id:details[i].Id,
-						// 		orderId:details[i].orderId,
-						// 		productId:details[i].productId,
-						// 		price:details[i].price,
-						// 		quantity:details[i].quantity,
-						// 		totalPrice:details[i].totalPrice
-						// 	};
-						// 	arr.push(array);
-						// }
-						// await redisCache.setCache(arr,arr);
+						const details = await this.orderService.getAllOrder();
+						let arr = [];
+						for (let i = 0;i < details.length;i++) {
+							let array = {
+								_id:details[i]._id,
+								orderId:details[i].orderId,
+								productId:details[i].productId,
+								price:details[i].price,
+								quantity:details[i].quantity,
+								totalPrice:details[i].totalPrice
+							};
+							arr.push(array);
+						}
+						await redis.setCache(arr,arr);
 						if (orderDetail) {
 							let quantity = [];
 							for (let i = 0;i < orderDetail.length;i++) {
@@ -157,7 +157,7 @@ class orderController {
 						await this.productService.updateProduct({ _id:existingProduct?._id,deletedAt:{ $eq:null } },{ stock:totalStock });
 					}
 				}
-				// await redisCache.deleteCache(orderId);
+				await redis.deleteCache(_id);
 				await this.orderService.cancleOrderDetails({ orderId: _id,deletedAt:{ $eq:null } });
 				await this.orderService.cancleOrder({ _id,deletedAt:{ $eq:null } });
 				return status.success(res,200,{ message: CONSTANT.ORDER.ORDER_CANCELLED, existingOrder });
@@ -184,7 +184,7 @@ class orderController {
 				const product = await this.productService.getProduct({ _id:existingId[0].productId,deletedAt:{ $eq:null } });
 			product!.stock += existingId[0].quantity;
 			await this.productService.updateProduct({ _id:product?._id,deletedAt:{ $eq:null } },{ stock:product?.stock });
-			// await redisCache.deleteCache(Id);
+			await redis.deleteCache(_id);
 			await this.orderService.cancleOrderDetails({ _id,deletedAt:{ $eq:null } });
 			return status.success(res,200,{ Message: CONSTANT.ORDER.ORDER_CANCELLED , existingId });
 			}

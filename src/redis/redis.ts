@@ -1,11 +1,11 @@
-import redisClient from './redisConfig';
+// import redisClient from '../model/service';
 
-async () => {
-	if (await redisClient.connect) {
+// async () => {
+// 	if (await redisClient.connect) {
 
-		console.log('hi');
-	}
-	else {
-		console.error('Redis client is not connected');
-	}
-};
+// 		console.log('hi');
+// 	}
+// 	else {
+// 		console.error('Redis client is not connected');
+// 	}
+// };

@@ -4,7 +4,7 @@ import { productService } from '../product/productService';
 import CONSTANT from '../helper/constant';
 import logger from '../helper/logger';
 import status from '../helper/statusCode';
-// import redisCache from '../redis/redisCache';
+import redis from '../redis/redisCache';
 import { Request,Response } from 'express';
 import { Details, cart, updatecart } from '../helper/routerInterface';
 import { UpdateWriteOpResult } from 'mongoose';
@@ -21,16 +21,16 @@ class cartController {
 	public getCart = async (req:Request, res:Response) => {
 		try {
 			const { _id } = req.query as {_id:string};
-			// const cacheData = JSON.parse(await redisCache.getCache(cartId));
-			// if (cacheData === null) {
-			const cart = await this.cartService.getCart({ _id,deletedAt:{ $eq:null } });
-			const getCartData:object | null = await this.cartService.getCartDetails({ _id,deletedAt:{ $eq:null } });
-			// await redisCache.setCache(getCartData.cartId,getCartData);
-			return status.success(res,200,{ getCartData,totalPrice:cart?.totalPrice });
-		// }
-		// else {
-		// 	return status.success(res,200,cacheData);
-		// }
+			const cacheData = JSON.parse(await redis.getCache(_id)as string);
+			if (cacheData === null) {
+				const cart = await this.cartService.getCart({ _id,deletedAt:{ $eq:null } });
+				const getCartData = await this.cartService.getCartDetails({ _id,deletedAt:{ $eq:null } });
+				await redis.setCache(getCartData[0].cartId,getCartData);
+				return status.success(res,200,{ getCartData,totalPrice:cart?.totalPrice });
+			}
+			else {
+				return status.success(res,200,cacheData);
+			}
 		}
 		catch (error:any) {
 			logger.error({ 'error':error.message,'cartController getCartById':CONSTANT.LOGGER.INTERNAL_SERVER_ERROR });
@@ -66,7 +66,7 @@ class cartController {
 							}
 							else {
 								await this.cartService.updateCart({ _id:addToCart._id },{ totalPrice:total });
-								// await redisCache.setCache(addToCart.cartId,addToCart);
+								await redis.setCache(addToCart._id,addToCart);
 								return status.success(res,200,addToCart);
 							}
 						}
@@ -117,7 +117,7 @@ class cartController {
 								await this.cartService.updateCart({ _id:existingCart._id },{ totalPrice:totals });
 							}
 						}
-						// await redisCache.setCache(existingCart.cartId,existingCart);						
+						await redis.setCache(existingCart._id,existingCart);						
 						return status.success(res,200,existingCart);
 					}
 				}
@@ -158,8 +158,8 @@ class cartController {
 							sum += allCartDetails[i].totalPrice;
 						}
 						await this.cartService.updateCart({ _id:cartData.cartId },{ totalPrice:sum });
-						const updated:object|null = await this.cartService.getCartDetails({ cartId:cartData.cartId, productId:cartData.productId,deletedAt:{ $eq:null } });
-						// await redisCache.setCache(updated.cartId,updated);
+						const updated = await this.cartService.getCartDetails({ cartId:cartData.cartId, productId:cartData.productId,deletedAt:{ $eq:null } });
+						await redis.setCache(updated[0].cartId,updated);
 						return status.success(res,200,{ updateData,updated });
 					}
 				}
@@ -185,7 +185,7 @@ class cartController {
 			const cart = await this.cartService.getCart({ _id,deletedAt:{ $eq:null } });
 			if (cart?.buyerId.toString() === res.locals._id || res.locals.role === 'admin') {
 				await this.cartService.deleteCartDetails({ cartId:_id });
-				// await redisCache.deleteCache(cartId);
+				await redis.deleteCache(_id);
 				await this.cartService.deleteCart({ _id });
 				return status.success(res,200,{ message: CONSTANT.MESSAGE.DELETE_CART, cart });
 			}
@@ -209,7 +209,7 @@ class cartController {
 				const existingCart = await this.cartService.getCart({ _id:cartDetails?.cartId.toString(),deletedAt:{ $eq:null } });
 			existingCart!.totalPrice! -= cartDetails!.totalPrice;
 			await this.cartService.updateCart({ _id:existingCart?._id },{ totalPrice:existingCart?.totalPrice });
-			// await redisCache.deleteCache(Id);
+			await redis.deleteCache(_id);
 			await this.cartService.deleteCartDetails({ _id });
 			return status.success(res,200,{ message: CONSTANT.MESSAGE.DELETE_CART ,cartDetails });
 			}
