@@ -20,25 +20,13 @@ class orderController {
 		this.productService = new productService();
 		this.orderService = new orderService();
 	}
-
-	public getAllDetails = async (req:Request,res:Response) => {
-		try {
-			const { orderId } = req.query;
-			const details = await this.orderService.getAllDetails(orderId);
-			return status.success(res,200,details);
-		}
-		catch (error:any) {
-			logger.error({ 'error':error.message, 'orderController getOrderDetailsById':CONSTANT.LOGGER.INTERNAL_SERVER_ERROR });
-			return status.errors(res,500,error);
-		}
-	};
 	public getOrder = async (req:Request, res:Response) => {
 		try {
-			const { orderId } = req.query;
+			const { orderId } = req.query as {orderId:string};
 			// const orderCache = JSON.parse(await redisCache.getCache(orderId));
 			// if (orderCache === null) {
-			const getOrderDetails = await this.orderService.getOrderDetailsById({ orderId,deletedAt:{ $eq:null } });
-			const order = await this.orderService.order({ _id:orderId,deletedAt:{ $eq:null } });
+			const getOrderDetails = await this.orderService.getOrderDetailsById(orderId);
+			// const order = await this.orderService.order({ _id:orderId,deletedAt:{ $eq:null } });
 			// let arr = [];
 			// console.log('i');
 			// for (let i = 0; i < getOrderDetails.length;i++) {
@@ -55,7 +43,7 @@ class orderController {
 			// }
 			// console.log(arr);
 			// await redisCache.setCache(getOrderDetails.orderId,getOrderDetails);
-			return status.success(res,200,{ getOrderDetails,totalPrice:order?.totalPrice });
+			return status.success(res,200,getOrderDetails);
 		// }
 		// else {
 		// 	return res.json(orderCache);
@@ -79,7 +67,7 @@ class orderController {
 					// await redisCache.setCache(orderData.orderId,orderData);
 					if (orderData) {
 						const cartDetails = await this.cartService.getCartDetails({ cartId:cart._id,deletedAt:{ $eq:null } });
-						const orderId = orderData._id;
+						const orderId:String = orderData._id;
 						let orderDetail = [];
 						for (let i = 0; i < cartDetails.length; i++) {
 							const product = await this.productService.getProduct({ _id:cartDetails[i].productId });
@@ -152,7 +140,7 @@ class orderController {
 
 	public cancleOrder = async (req:Request, res:Response) => {
 		try {
-			const { _id } = req.query;
+			const { _id } = req.query as {_id:string};
 			const existingOrder = await this.orderService.order({ _id,deletedAt:{ $eq:null } });
 			if (existingOrder?.buyerId.toString() === res.locals._id || res.locals.role === 'admin') {
 				const orderDetails = await this.orderService.getOrderDetailsById({ orderId:_id,deletedAt:{ $eq:null } });
@@ -187,12 +175,12 @@ class orderController {
 
 	public cancleOrderDetails = async (req:Request, res:Response) => {
 		try {
-			const { _id } = req.query;
+			const { _id } = req.query as {_id:string};
 			const existingId = await this.orderService.getOrderDetailsById({ _id,deletedAt:{ $eq:null } });
 			if (existingId) {
 				const existingOrderId = await this.orderService.order({ _id:existingId[0].orderId,deletedAt:{ $eq:null } });
 				const total:number = existingOrderId!.totalPrice - existingId[0].totalPrice;
-				await this.orderService.updateOrder({ _id:existingOrderId?._id,deletedAt:{ $eq:null } },{ totalPrice:total });
+				await this.orderService.updateOrder({ _id:existingOrderId?._id },{ totalPrice:total });
 				const product = await this.productService.getProduct({ _id:existingId[0].productId,deletedAt:{ $eq:null } });
 			product!.stock += existingId[0].quantity;
 			await this.productService.updateProduct({ _id:product?._id,deletedAt:{ $eq:null } },{ stock:product?.stock });

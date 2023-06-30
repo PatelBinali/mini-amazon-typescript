@@ -1,31 +1,11 @@
 import { ObjectId } from 'mongodb';
 import orderDetails from '../model/orderDetails';
 import ordermodel from '../model/orderModel';
+import { cartTotalPrice, deleteUser, order } from '../helper/routerInterface';
 
 class orderService {
-	public getOrder = async (_id:any) => {
-		try {
-			return await ordermodel.findById(_id,{ _id });
-		}
-		catch (error) {
-			throw error;
-		}
-	};
 
-	public getAllOrder = async () => {
-		try {
-			return await ordermodel.find(
-				// 	{
-				// 	include: [{ model: db.orderDetails }]
-				// }
-			);
-		}
-		catch (error) {
-			throw error;
-		}
-	};
-
-	public placeOrder = async (placeOrder:any) => {
+	public placeOrder = async (placeOrder:order) => {
 		try {
 			return await ordermodel.create(placeOrder);
 		}
@@ -34,7 +14,7 @@ class orderService {
 		}
 	};
 
-	public updateOrder = async (query:any,updated:any) => {
+	public updateOrder = async (query:deleteUser,updated:cartTotalPrice) => {
 		try {
 			const total = await ordermodel.updateOne(query,updated);
 			return total;
@@ -45,15 +25,6 @@ class orderService {
 	};
 
 	public order = async (query:any) => {
-		try {
-			return await ordermodel.findOne(query);
-		}
-		catch (error) {
-			throw error;
-		}
-	};
-
-	public orderDetailsPlaced = async (query:any) => {
 		try {
 			return await ordermodel.findOne(query);
 		}
@@ -82,29 +53,11 @@ class orderService {
 
 	public getOrderDetailsById = async (query:any) => {
 		try {
-			return await orderDetails.find(query);
-		}
-		catch (error) {
-			throw error;
-		}
-	};
-
-	public cancleOrderDetails = async (query:any) => {
-		try {
-			return await orderDetails.softDelete(query);
-		}
-		catch (error) {
-			throw error;
-		}
-	};
-
-	public getAllDetails = async (orderId:any) => {
-		try {
 			const result = orderDetails.aggregate(
 				[
 					{
 						$match: {
-							orderId: new ObjectId(`${orderId}`)
+							orderId:new ObjectId(`${query}`)
 						}
 					},
 					{
@@ -144,6 +97,15 @@ class orderService {
 				{ maxTimeMS: 60000, allowDiskUse: true }
 			);
 			return result;
+		}
+		catch (error) {
+			throw error;
+		}
+	};
+
+	public cancleOrderDetails = async (query:any) => {
+		try {
+			return await orderDetails.softDelete(query);
 		}
 		catch (error) {
 			throw error;

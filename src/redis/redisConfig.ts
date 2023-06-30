@@ -6,5 +6,5 @@ redisClient.on('connect',function() {
 	console.log('redis connected.');
 	
 });
-
+redisClient.connect();
 export default redisClient;

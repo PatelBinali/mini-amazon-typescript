@@ -1,6 +1,6 @@
 import express, { Router } from 'express';
 import { productController } from './productController';
-import { addProduct, deleteProduct, getProduct, updateProduct } from '../validation/productValidation';
+import { addProduct, deleteProduct, getProduct, query, updateProduct } from '../validation/productValidation';
 import { Auth } from '../middleware/authMiddleware';
 import { queryValidate, schemaValidate } from '../middleware/schemaValidation';
 
@@ -19,7 +19,7 @@ export class product {
 	route(): void {
 		this.router.get('/getProduct',[this.auth.authenticateToken,queryValidate(getProduct)],this.productController.getProduct);
         
-		this.router.get('/productList',[this.auth.authenticateToken],this.productController.productList);
+		this.router.get('/productList',[this.auth.authenticateToken,queryValidate(query)],this.productController.productList);
         
 		this.router.post('/addProduct',[this.auth.authenticateToken,schemaValidate(addProduct)],this.productController.addProduct);
         

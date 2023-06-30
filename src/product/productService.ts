@@ -1,3 +1,4 @@
+import { productData } from '../helper/routerInterface';
 import productmodel from '../model/productModel';
 
 // const Sequelize = require('sequelize');
@@ -57,7 +58,7 @@ class productService {
 		}
 	};
 
-	public addProduct = async (productData:any) => {
+	public addProduct = async (productData:productData) => {
 		try {
 			return await productmodel.create(productData);
 		}

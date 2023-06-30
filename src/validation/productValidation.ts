@@ -30,8 +30,9 @@ const getProduct = joi.object({
 
 const query = joi.object().keys({
 	searchTerm: joi.string(),
-	page:joi.number().min(1),
-	pageSize: joi.number().min(1) 
+	// page:joi.number().min(1),
+	// pageSize: joi.number().min(1)
+	price:joi.number() 
 });  
 
 export { getProduct,addProduct,updateProduct,deleteProduct,query };

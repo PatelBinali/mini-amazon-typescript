@@ -1,4 +1,5 @@
 // import db from '../model/config';
+import { admin, updateUser, user } from '../helper/routerInterface';
 import permissionmodel from '../model/permission';
 import usermodel from '../model/userModel';
 
@@ -11,7 +12,7 @@ class userService {
 			throw error;
 		}
 	};
-	public userList = async (searchTerm:any) => {
+	public userList = async (searchTerm:string) => {
 		try {
 			const result = usermodel.aggregate(
 				[
@@ -35,7 +36,7 @@ class userService {
 		}
 	};
 
-	public userSignUp = async (user:any) => {
+	public userSignUp = async (user:user) => {
 		try {
 			return await usermodel.create(user);
 		}
@@ -44,7 +45,7 @@ class userService {
 		}
 	};
 
-	public updateUser = async (update:any,query:any) => {
+	public updateUser = async (update:updateUser,query:user) => {
 		try {
 			return await usermodel.updateOne(update,query);
 		}
@@ -62,7 +63,7 @@ class userService {
 		}
 	};
 
-	public addPermission = async (addPermission:any) => {
+	public addPermission = async (addPermission:admin) => {
 		try {
 			return await permissionmodel.create(addPermission);
 		}
