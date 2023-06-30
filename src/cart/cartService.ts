@@ -1,20 +1,12 @@
 // import db from '../model/config';
 import cartmodel from '../model/cartModel';
 import cartDetails from '../model/cartDetails';
+import { Details, carts, cartTotalPrice, updateCart, updatecartId } from '../helper/routerInterface';
 
 class cartService {
 	public getCart = async (query:any) => {
 		try {
 			return await cartmodel.findOne(query);
-		}
-		catch (error) {
-			throw error;
-		}
-	};
-
-	public getAllCart = async (query:any) => {
-		try {
-			return await cartmodel.find(query);
 		}
 		catch (error) {
 			throw error;
@@ -39,7 +31,7 @@ class cartService {
 		}
 	};
 
-	public addCart = async (query:any) => {
+	public addCart = async (query:carts) => {
 		try {
 			return await cartmodel.create(query);
 		}
@@ -48,7 +40,7 @@ class cartService {
 		}
 	};
 
-	public addCartDetails = async (query:any) => {
+	public addCartDetails = async (query:Details) => {
 		try {
 			return await cartDetails.create(query);
 		}
@@ -57,7 +49,7 @@ class cartService {
 		}
 	};
 
-	public updateCart = async (updated:any,query:any) => {
+	public updateCart = async (updated:updatecartId,query:cartTotalPrice) => {
 		try {
 			return await cartmodel.updateOne(updated,query);
 		}
@@ -66,7 +58,7 @@ class cartService {
 		}
 	};
 
-	public updateCartDetails = async (updated:any,query:any) => {
+	public updateCartDetails = async (updated:updateCart,query:any) => {
 		try {
 			return await cartDetails.updateOne(updated,query);
 		}

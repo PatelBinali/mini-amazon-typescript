@@ -17,10 +17,10 @@ class productController {
 	}
 	public getProduct = async (req:Request, res:Response) => {
 		try {
-			const { _id:string } = req.query;
+			const { _id } = req.query as {_id:string};
 			// const cacheData = JSON.parse(await redisCache.getCache(productId));
 			// if (cacheData === null) {
-			const productData:object | null = await this.productService.getProducts({ _id:string,deletedAt:{ $eq:null } });
+			const productData:object | null = await this.productService.getProducts({ _id,deletedAt:{ $eq:null } });
 			if (!productData) {
 				logger.info({ 'productController getProduct':CONSTANT.LOGGER.PRODUCT_NOT_FOUND });
 				return status.errors(res,404,{ message:CONSTANT.PRODUCT.PRODUCT_NOT_FOUND,name:'' });
@@ -42,7 +42,7 @@ class productController {
 
 	public productList = async (req:Request, res:Response) => {
 		try {
-			let { searchTerm ,price } = req.query;
+			let { searchTerm ,price } = req.query as unknown as {searchTerm:string, price:number};
 			// let { productName } = req.query;
 			const products = await this.productService.productList(searchTerm,price);
 			return status.success(res,200,products);
@@ -108,7 +108,7 @@ class productController {
 
 	public deleteProduct = async (req:Request, res:Response) => {
 		try {
-			const { _id } = req.query;
+			const { _id } = req.query as {_id:string};
 			const existingProduct = await this.productService.getProduct({ _id,deletedAt:{ $eq:null } });
 			if (existingProduct?.sellerId.toString() === res.locals._id || res.locals.role === 'admin') {
 				await this.productService.deleteProduct({ _id:_id,sellerId:existingProduct?.sellerId.toString() });

@@ -8,4 +8,4 @@ async () => {
 	else {
 		console.error('Redis client is not connected');
 	}
-}; 
+};
