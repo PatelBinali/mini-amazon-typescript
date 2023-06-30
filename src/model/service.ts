@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { Redis } from 'ioredis';
 mongoose.Promise = global.Promise;
 const dbUrl = 'mongodb://localhost:27017/userMongo';
 const connect = async () => {
@@ -12,4 +13,16 @@ const connect = async () => {
 	});
 };
 
-export default { connect };
+const redisClient:Redis = new Redis();
+redisClient.on('connect',() => {
+	console.log('Redis Connected');
+	
+});
+
+redisClient.on('error',(err: any) => {
+	console.log('Redis Error',err);
+	
+});
+export default { connect,redisClient };
+
+

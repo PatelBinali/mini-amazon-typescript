@@ -3,7 +3,7 @@ import { productService } from './productService';
 import { cartService } from '../cart/cartService';
 import logger from '../helper/logger';
 import status from '../helper/statusCode';
-// import redisCache from '../redis/redisCache';
+import redis from '../redis/redisCache';
 import { Request, Response } from 'express';
 import { productData } from '../helper/routerInterface';
 import { UpdateWriteOpResult } from 'mongoose';
@@ -18,21 +18,21 @@ class productController {
 	public getProduct = async (req:Request, res:Response) => {
 		try {
 			const { _id } = req.query as {_id:string};
-			// const cacheData = JSON.parse(await redisCache.getCache(productId));
-			// if (cacheData === null) {
-			const productData:object | null = await this.productService.getProducts({ _id,deletedAt:{ $eq:null } });
-			if (!productData) {
-				logger.info({ 'productController getProduct':CONSTANT.LOGGER.PRODUCT_NOT_FOUND });
-				return status.errors(res,404,{ message:CONSTANT.PRODUCT.PRODUCT_NOT_FOUND,name:'' });
+			const cacheData = JSON.parse(await redis.getCache(_id)as string);
+			if (cacheData === null) {
+				const productData:object | null = await this.productService.getProducts({ _id,deletedAt:{ $eq:null } });
+				if (!productData) {
+					logger.info({ 'productController getProduct':CONSTANT.LOGGER.PRODUCT_NOT_FOUND });
+					return status.errors(res,404,{ message:CONSTANT.PRODUCT.PRODUCT_NOT_FOUND,name:'' });
+				}
+				else {
+					await redis.setCache(_id,productData);
+					return status.success(res,200,productData);
+				}
 			}
 			else {
-				// await redisCache.setCache(productId,productData);
-				return status.success(res,200,productData);
+				return res.json(cacheData);
 			}
-		// }
-		// else {
-		// 	return res.json(cacheData);
-		// }
 		}
 		catch (error:any) {
 			logger.error({ 'error':error.message,'productController getProduct':CONSTANT.LOGGER.INTERNAL_SERVER_ERROR });
@@ -57,8 +57,8 @@ class productController {
 		try {
 			const productData:productData = req.body;
 			productData.sellerId = res.locals._id;	
-			const newProductData:object|null = await this.productService.addProduct(productData);
-			// await redisCache.setCache(newProductData.productId,newProductData);
+			const newProductData = await this.productService.addProduct(productData);
+			await redis.setCache(newProductData._id,newProductData);
 			return status.success(res,200,newProductData);
 		}
 		catch (error:any) {
@@ -86,8 +86,8 @@ class productController {
 							await this.cartService.updateCart({ _id:cart[i].cartId },{ totalPrice:sum });
 						}
 					} 
-					const updatedData:object|null = await this.productService.getProduct({ _id:productData._id });
-					// 	// await redisCache.setCache(updatedData.productId,updatedData);
+					const updatedData = await this.productService.getProduct({ _id:productData._id });
+					await redis.setCache(updatedData!._id,updatedData);
 					return status.success(res,200,{ updatedProduct,updatedData });
 				}
 				else {
@@ -112,7 +112,7 @@ class productController {
 			const existingProduct = await this.productService.getProduct({ _id,deletedAt:{ $eq:null } });
 			if (existingProduct?.sellerId.toString() === res.locals._id || res.locals.role === 'admin') {
 				await this.productService.deleteProduct({ _id:_id,sellerId:existingProduct?.sellerId.toString() });
-				// await redisCache.deleteCache(productId);
+				await redis.deleteCache(_id);
 				return status.success(res,200,{ message:CONSTANT.MESSAGE.DELETE_PRODUCT, existingProduct });
 			}
 			else {

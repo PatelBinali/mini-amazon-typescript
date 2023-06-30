@@ -3,7 +3,7 @@ import { productService } from '../product/productService';
 import { cartService } from '../cart/cartService';
 import { orderService } from '../order/orderService';
 import { Request, Response } from 'express';
-// import redisCache from '../redis/redisCache';
+import redis from '../redis/redisCache';
 import status from '../helper/statusCode';
 import CONSTANT from '../helper/constant';
 import logger from '../helper/logger';
@@ -33,21 +33,21 @@ class userController {
 	public getUser = async (req: Request, res: Response) => {
 		try {
 			const { _id } = req.query as {_id:string};
-			// const cacheData = JSON.parse(await redisCache.getCache(_id));
-			// if (cacheData === null) {
-			const user:object|null = await this.userService.getUser({ _id,deletedAt:{ $eq:null } });
-			if (!user) {
-				logger.info({ 'userController getUser':CONSTANT.LOGGER.USER_NOT_FOUND });
-				return status.errors(res,404,{ message: CONSTANT.USER.USER_NOT_FOUND,name: '' });
+			const cacheData = JSON.parse(await redis.getCache(_id)as string);
+			if (cacheData === null) {
+				const user:object|null = await this.userService.getUser({ _id,deletedAt:{ $eq:null } });
+				if (!user) {
+					logger.info({ 'userController getUser':CONSTANT.LOGGER.USER_NOT_FOUND });
+					return status.errors(res,404,{ message: CONSTANT.USER.USER_NOT_FOUND,name: '' });
+				}
+				else {
+					await redis.setCache(_id,user);
+					return status.success(res,200,user);
+				}
 			}
-			// else {
-			// 	await redisCache.setCache(_id,user);
-			return status.success(res,200,user);
-			// }
-			// }
-			// else {
-			// 	return status.success(res,200,cacheData);
-			// }
+			else {
+				return status.success(res,200,cacheData);
+			}
 		}
 		catch (error: any) {
 			logger.error({ 'error':error.message,'userController getUser':CONSTANT.LOGGER.INTERNAL_SERVER_ERROR });
@@ -104,9 +104,7 @@ class userController {
 					const pass:string = await this.bcryptPassword.bcryptPassword(user.password);
 					user.password = pass;
 					const adminData = await this.userService.userSignUp(user);
-					// const s = await redisCache.setCache(adminData._id,adminData);
-					// console.log(s);
-					
+					await redis.setCache(adminData._id,adminData);					
 					return status.success(res,200,adminData);
 				}
 				else {
@@ -159,8 +157,8 @@ class userController {
 				const pass:string = await this.bcryptPassword.bcryptPassword(user.password);
 				user.password = pass;
 				const updatedUser:UpdateWriteOpResult = await this.userService.updateUser({ _id:user._id },user);
-				const updated:object|null = await this.userService.getUser({ _id:user._id,deletedAt:{ $eq:null } });
-				// await redisCache.setCache(updated._id,updated);
+				const updated = await this.userService.getUser({ _id:user._id,deletedAt:{ $eq:null } });
+				await redis.setCache(updated!._id,updated);
 				return status.success(res,200,{ updatedUser,updated });
 			}
 			else {
@@ -182,7 +180,7 @@ class userController {
 				if (_id === res.locals._id && existingUser.role === 'seller' || res.locals.role === 'admin') {
 				// seller
 					await this.productService.deleteProduct({ sellerId:_id });
-					// await redisCache.deleteCache(_id);
+					await redis.deleteCache(_id);
 					await this.userService.deleteUser({ _id });
 					const deletedUser = await this.userService.getUser({ _id });
 					return status.success(res,200,{ message: CONSTANT.MESSAGE.DELETE_USER ,deletedUser });
@@ -190,10 +188,10 @@ class userController {
 				else if (_id === res.locals._id && existingUser.role === 'buyer' || res.locals.role === 'admin') {
 				// buyer
 					await this.cartService.deleteCart({ buyerId:_id });
-					// await this.cartService.deleteCartDetails({ cartId:await this.cartService.getCart({ buyerId:_id }) });
+					await this.cartService.deleteCartDetails({ cartId:await this.cartService.getCart({ buyerId:_id }) });
 					await this.orderService.cancleOrder({ buyerId:_id });
-					// await this.orderService.cancleOrderDetails({ orderId:await this.orderService.order({ buyerId:_id }) });
-					// await redisCache.deleteCache(_id);
+					await this.orderService.cancleOrderDetails({ orderId:await this.orderService.order({ buyerId:_id }) });
+					await redis.deleteCache(_id);
 					await this.userService.deleteUser({ _id });
 					const deletedUser:object | null = await this.userService.getUser({ _id });
 					return status.success(res,200,{ message: CONSTANT.MESSAGE.DELETE_USER ,deletedUser });
@@ -217,7 +215,8 @@ class userController {
 	public addPermission = async (req:Request, res:Response) => {
 		try {
 			const addPermission:admin = req.body;
-			const permission:object|null = await this.userService.addPermission(addPermission);
+			const permission = await this.userService.addPermission(addPermission);
+			await redis.setCache(permission._id,permission);
 			return status.success(res,200,permission);
 		}
 		catch (error:any) {
@@ -240,8 +239,9 @@ class userController {
 	public deletePermission = async (req:Request, res:Response) => {
 		try {
 			const { _id } = req.query as {_id:string};
-			const permission:object | null = await this.userService.getPermission({ _id,deletedAt:{ $eq:null } });
+			const permission = await this.userService.getPermission({ _id,deletedAt:{ $eq:null } });
 			if (permission) {
+				await redis.deleteCache(permission._id);
 				await this.userService.deletePermission({ permissionId:_id });
 				return status.success(res,200,{ message:CONSTANT.ADMIN.PERMISSION_DELETED });
 			}

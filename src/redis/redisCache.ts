@@ -1,9 +1,11 @@
-import redisClients from './redisConfig';
+import Redis from 'ioredis';
 
-const Redis = {
+
+const redisClient = new Redis();
+const redis = {
 	getCache: async (_id:string) => {
 		try {
-			const cacheData = await redisClients.GET(`cacheData.${_id}`);
+			const cacheData = await redisClient.get(`cacheData.${_id}`);
 			console.log('cache get');
 			return cacheData;
 		}
@@ -14,7 +16,7 @@ const Redis = {
 
 	setCache: async (_id:any,user:any) => {
 		try {
-			const cacheData = await redisClients.SET(`cacheData.${_id}`,JSON.stringify(user));
+			const cacheData = await redisClient.set(`cacheData.${_id}`,JSON.stringify(user));
 			console.log('cache set');
 			return cacheData;
 		}
@@ -25,7 +27,7 @@ const Redis = {
 
 	deleteCache: async (_id:string) => {
 		try {
-			const cacheData = await redisClients.DEL(`cacheData.${_id}`);
+			const cacheData = await redisClient.del(`cacheData.${_id}`);
 			console.log('cache delete');
 			return cacheData;
 		}
@@ -34,4 +36,4 @@ const Redis = {
 		}
 	}
 };
-export default Redis;
+export default redis;

@@ -13,7 +13,18 @@ class orderService {
 			throw error;
 		}
 	};
-
+	public getAllOrder = async () => {
+		try {
+			return await orderDetails.find(
+				// 	{
+				// 	include: [{ model: db.orderDetails }]
+				// }
+			);
+		}
+		catch (error) {
+			throw error;
+		}
+	};
 	public updateOrder = async (query:deleteUser,updated:cartTotalPrice) => {
 		try {
 			const total = await ordermodel.updateOne(query,updated);
